@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Settings - Personal Expense Tracker">
+    <meta name="keywords" content="expense tracker, settings, preferences, budget">
+    <meta name="author" content="Personal Expense Tracker">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Settings - Personal Expense Tracker">
+    <meta property="og:description" content="Manage your account settings and preferences">
+    <meta property="og:type" content="website">
+    
+    <title>Settings - ExpenseTracker</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="container">
+            <div class="header__content">
+                <!-- Logo/App Name -->
+                <div class="header__brand">
+                    <a href="dashboard.html" class="header__logo-link">
+                        <img src="assets/logos/logo.svg" alt="ExpenseTracker Logo" class="header__logo">
+                        <span class="header__title--sr-only">ExpenseTracker</span>
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="header__nav">
+                    <ul class="nav__list">
+                        <li class="nav__item">
+                            <a href="dashboard.html" class="nav__link" data-page="dashboard">
+                                <i class="fas fa-chart-line nav__icon"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="reports.html" class="nav__link" data-page="reports">
+                                <i class="fas fa-chart-pie nav__icon"></i>
+                                <span>Reports</span>
+                            </a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="settings.html" class="nav__link nav__link--active" data-page="settings">
+                                <i class="fas fa-cog nav__icon"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Auth Buttons -->
+                <div class="header__auth" id="authSection">
+                    <a href="login.html" class="btn-auth btn-auth--login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="signup.html" class="btn-auth btn-auth--signup">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Sign Up</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="header__menu-toggle" aria-label="Toggle navigation menu" id="menuToggle">
+                    <span class="menu-toggle__line"></span>
+                    <span class="menu-toggle__line"></span>
+                    <span class="menu-toggle__line"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main main--settings">
+        <div class="container">
+            <div class="settings">
+                <!-- Settings Header -->
+                <div class="settings__header">
+                    <h1 class="settings__title">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </h1>
+                    <p class="settings__subtitle">Manage your account preferences and settings</p>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="settings__content">
+                    <!-- User Profile Section -->
+                    <section class="settings-section" id="profileSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-user"></i>
+                                <span>User Profile</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <form class="settings-form" id="profileForm">
+                                <!-- Profile Picture -->
+                                <div class="form__group form__group--profile-picture">
+                                    <label class="form__label">Profile Picture</label>
+                                    <div class="profile-picture">
+                                        <div class="profile-picture__preview">
+                                            <img src="assets/images/avatars/default-avatar.svg" alt="Profile Picture" id="profilePicturePreview" class="profile-picture__img">
+                                            <button type="button" class="profile-picture__change" id="changeProfilePictureBtn">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                        </div>
+                                        <input type="file" id="profilePictureInput" accept="image/*" class="profile-picture__input" style="display: none;">
+                                        <p class="profile-picture__hint">Click to upload a new profile picture</p>
+                                    </div>
+                                </div>
+
+                                <!-- Display Name -->
+                                <div class="form__group">
+                                    <label for="displayName" class="form__label">Display Name</label>
+                                    <input 
+                                        type="text" 
+                                        id="displayName" 
+                                        name="displayName" 
+                                        class="form__input" 
+                                        placeholder="Enter your display name"
+                                        value=""
+                                    >
+                                </div>
+
+                                <!-- Email Preferences -->
+                                <div class="form__group">
+                                    <label class="form__label">Email Preferences</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="newsletter" id="newsletterCheckbox" class="checkbox-input">
+                                            <span class="checkbox-text">Receive newsletter updates</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="notifications" id="notificationsCheckbox" class="checkbox-input" checked>
+                                            <span class="checkbox-text">Receive email notifications</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="settings-form__actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <i class="fas fa-save"></i>
+                                        <span>Save Changes</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelProfileBtn">
+                                        <i class="fas fa-times"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Change Password Section -->
+                    <section class="settings-section" id="passwordSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-lock"></i>
+                                <span>Change Password</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <form class="settings-form" id="passwordForm">
+                                <div class="form__group">
+                                    <label for="currentPassword" class="form__label">Current Password</label>
+                                    <input 
+                                        type="password" 
+                                        id="currentPassword" 
+                                        name="currentPassword" 
+                                        class="form__input" 
+                                        placeholder="Enter current password"
+                                        required
+                                    >
+                                </div>
+                                <div class="form__group">
+                                    <label for="newPassword" class="form__label">New Password</label>
+                                    <input 
+                                        type="password" 
+                                        id="newPassword" 
+                                        name="newPassword" 
+                                        class="form__input" 
+                                        placeholder="Enter new password"
+                                        required
+                                        minlength="6"
+                                    >
+                                    <p class="form__hint">Password must be at least 6 characters long</p>
+                                </div>
+                                <div class="form__group">
+                                    <label for="confirmNewPassword" class="form__label">Confirm New Password</label>
+                                    <input 
+                                        type="password" 
+                                        id="confirmNewPassword" 
+                                        name="confirmNewPassword" 
+                                        class="form__input" 
+                                        placeholder="Confirm new password"
+                                        required
+                                    >
+                                </div>
+                                <div class="settings-form__actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <i class="fas fa-key"></i>
+                                        <span>Change Password</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelPasswordBtn">
+                                        <i class="fas fa-times"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Budget Management Section -->
+                    <section class="settings-section" id="budgetSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-wallet"></i>
+                                <span>Budget Management</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <form class="settings-form" id="budgetForm">
+                                <!-- Budget Period -->
+                                <div class="form__group">
+                                    <label for="budgetPeriod" class="form__label">Budget Period</label>
+                                    <select id="budgetPeriod" name="budgetPeriod" class="form__select">
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly" selected>Monthly</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+
+                                <!-- Monthly Budget -->
+                                <div class="form__group">
+                                    <label for="monthlyBudget" class="form__label">Monthly Budget</label>
+                                    <div class="form__input-wrapper">
+                                        <span class="form__currency">$</span>
+                                        <input 
+                                            type="number" 
+                                            id="monthlyBudget" 
+                                            name="monthlyBudget" 
+                                            class="form__input form__input--number" 
+                                            placeholder="0.00"
+                                            step="0.01"
+                                            min="0"
+                                            value="3000"
+                                        >
+                                    </div>
+                                    <div class="budget-visual">
+                                        <div class="budget-visual__bar">
+                                            <div class="budget-visual__progress" id="budgetProgress" style="width: 45%"></div>
+                                        </div>
+                                        <div class="budget-visual__info">
+                                            <span class="budget-visual__spent">$1,350.00 spent</span>
+                                            <span class="budget-visual__remaining">$1,650.00 remaining</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category Budgets -->
+                                <div class="form__group">
+                                    <label class="form__label">Category Budgets</label>
+                                    <div class="category-budgets" id="categoryBudgets">
+                                        <!-- Category budgets will be dynamically inserted here -->
+                                    </div>
+                                </div>
+
+                                <div class="settings-form__actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <i class="fas fa-save"></i>
+                                        <span>Save Budget</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelBudgetBtn">
+                                        <i class="fas fa-times"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Preferences Section -->
+                    <section class="settings-section" id="preferencesSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-sliders-h"></i>
+                                <span>Preferences</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <form class="settings-form" id="preferencesForm">
+                                <!-- Theme Selection -->
+                                <div class="form__group">
+                                    <label for="theme" class="form__label">Theme</label>
+                                    <select id="theme" name="theme" class="form__select">
+                                        <option value="light" selected>Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="auto">Auto (System)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Currency -->
+                                <div class="form__group">
+                                    <label for="currency" class="form__label">Default Currency</label>
+                                    <select id="currency" name="currency" class="form__select">
+                                        <option value="USD" selected>USD ($)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                        <option value="JPY">JPY (¥)</option>
+                                        <option value="CAD">CAD (C$)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Date Format -->
+                                <div class="form__group">
+                                    <label for="dateFormat" class="form__label">Date Format</label>
+                                    <select id="dateFormat" name="dateFormat" class="form__select">
+                                        <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+
+                                <!-- Default Category -->
+                                <div class="form__group">
+                                    <label for="defaultCategory" class="form__label">Default Expense Category</label>
+                                    <select id="defaultCategory" name="defaultCategory" class="form__select">
+                                        <option value="">None</option>
+                                        <option value="food">Food & Dining</option>
+                                        <option value="transport">Transportation</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="utilities">Utilities</option>
+                                        <option value="shopping">Shopping</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="education">Education</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <!-- Language -->
+                                <div class="form__group">
+                                    <label for="language" class="form__label">Language</label>
+                                    <select id="language" name="language" class="form__select" disabled>
+                                        <option value="en" selected>English</option>
+                                        <option value="es">Spanish (Coming Soon)</option>
+                                        <option value="fr">French (Coming Soon)</option>
+                                    </select>
+                                    <p class="form__hint">Additional languages coming soon</p>
+                                </div>
+
+                                <div class="settings-form__actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <i class="fas fa-save"></i>
+                                        <span>Save Preferences</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelPreferencesBtn">
+                                        <i class="fas fa-times"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Notification Settings Section -->
+                    <section class="settings-section" id="notificationsSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-bell"></i>
+                                <span>Notification Settings</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <form class="settings-form" id="notificationsForm">
+                                <!-- Email Notifications -->
+                                <div class="form__group">
+                                    <label class="form__label">Email Notifications</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="emailExpenseAlerts" id="emailExpenseAlerts" class="checkbox-input" checked>
+                                            <span class="checkbox-text">Expense alerts</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="emailBudgetAlerts" id="emailBudgetAlerts" class="checkbox-input" checked>
+                                            <span class="checkbox-text">Budget alerts</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="emailWeeklySummary" id="emailWeeklySummary" class="checkbox-input">
+                                            <span class="checkbox-text">Weekly summary</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Browser Notifications -->
+                                <div class="form__group">
+                                    <label class="form__label">Browser Notifications</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="browserNotifications" id="browserNotifications" class="checkbox-input">
+                                            <span class="checkbox-text">Enable browser notifications</span>
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn--secondary btn--small" id="requestNotificationPermission">
+                                        <i class="fas fa-bell"></i>
+                                        <span>Request Permission</span>
+                                    </button>
+                                </div>
+
+                                <!-- Budget Alert Threshold -->
+                                <div class="form__group">
+                                    <label for="budgetAlertThreshold" class="form__label">Budget Alert Threshold (%)</label>
+                                    <input 
+                                        type="number" 
+                                        id="budgetAlertThreshold" 
+                                        name="budgetAlertThreshold" 
+                                        class="form__input" 
+                                        placeholder="80"
+                                        min="0"
+                                        max="100"
+                                        value="80"
+                                    >
+                                    <p class="form__hint">Get notified when you reach this percentage of your budget</p>
+                                </div>
+
+                                <div class="settings-form__actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <i class="fas fa-save"></i>
+                                        <span>Save Notifications</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelNotificationsBtn">
+                                        <i class="fas fa-times"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Data Management Section -->
+                    <section class="settings-section" id="dataSection">
+                        <div class="settings-section__header">
+                            <h2 class="settings-section__title">
+                                <i class="fas fa-database"></i>
+                                <span>Data Management</span>
+                            </h2>
+                        </div>
+                        <div class="settings-section__body">
+                            <div class="data-management">
+                                <!-- Export Data -->
+                                <div class="data-management__item">
+                                    <div class="data-management__info">
+                                        <h3 class="data-management__title">Export Data</h3>
+                                        <p class="data-management__description">Download your expense data in JSON or CSV format</p>
+                                    </div>
+                                    <div class="data-management__actions">
+                                        <button type="button" class="btn btn--secondary" id="exportJSONBtn">
+                                            <i class="fas fa-file-code"></i>
+                                            <span>Export JSON</span>
+                                        </button>
+                                        <button type="button" class="btn btn--secondary" id="exportCSVBtn">
+                                            <i class="fas fa-file-csv"></i>
+                                            <span>Export CSV</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Import Data -->
+                                <div class="data-management__item">
+                                    <div class="data-management__info">
+                                        <h3 class="data-management__title">Import Data</h3>
+                                        <p class="data-management__description">Import expense data from a backup file</p>
+                                    </div>
+                                    <div class="data-management__actions">
+                                        <input type="file" id="importFileInput" accept=".json,.csv" style="display: none;">
+                                        <button type="button" class="btn btn--secondary" id="importDataBtn">
+                                            <i class="fas fa-file-import"></i>
+                                            <span>Import Data</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Clear All Data -->
+                                <div class="data-management__item">
+                                    <div class="data-management__info">
+                                        <h3 class="data-management__title">Clear All Data</h3>
+                                        <p class="data-management__description">Permanently delete all your expense data. This action cannot be undone.</p>
+                                    </div>
+                                    <div class="data-management__actions">
+                                        <button type="button" class="btn btn--danger" id="clearDataBtn">
+                                            <i class="fas fa-trash"></i>
+                                            <span>Clear All Data</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Account Deletion -->
+                                <div class="data-management__item data-management__item--danger">
+                                    <div class="data-management__info">
+                                        <h3 class="data-management__title">Delete Account</h3>
+                                        <p class="data-management__description">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                                    </div>
+                                    <div class="data-management__actions">
+                                        <button type="button" class="btn btn--danger" id="deleteAccountBtn">
+                                            <i class="fas fa-user-times"></i>
+                                            <span>Delete Account</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <p class="footer__text">&copy; 2024 ExpenseTracker. All rights reserved.</p>
+                <div class="footer__links">
+                    <a href="#privacy" class="footer__link">Privacy</a>
+                    <a href="#terms" class="footer__link">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal modal--delete" id="deleteConfirmModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content modal__content--delete">
+            <div class="modal__header modal__header--delete">
+                <div class="modal__icon-wrapper">
+                    <i class="fas fa-exclamation-triangle modal__icon"></i>
+                </div>
+                <h2 class="modal__title modal__title--delete" id="deleteModalTitle">Confirm Deletion</h2>
+                <p class="modal__subtitle" id="deleteModalSubtitle">Are you sure you want to proceed?</p>
+            </div>
+            
+            <div class="modal__body modal__body--delete" id="deleteModalBody">
+                <!-- Confirmation details will be inserted here -->
+            </div>
+            
+            <div class="modal__footer modal__footer--delete">
+                <button type="button" class="btn btn--secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn btn--danger" id="confirmDeleteBtn">
+                    <i class="fas fa-check"></i>
+                    <span>Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

@@ -35,6 +35,8 @@ const Navigation = {
       return 'dashboard';
     } else if (filename === 'reports.html') {
       return 'reports';
+    } else if (filename === 'settings.html') {
+      return 'settings';
     } else if (filename === 'login.html') {
       return 'login';
     } else if (filename === 'signup.html') {

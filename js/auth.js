@@ -111,6 +111,8 @@ const Auth = {
       return 'dashboard';
     } else if (filename === 'reports.html') {
       return 'reports';
+    } else if (filename === 'settings.html') {
+      return 'settings';
     } else if (filename === 'login.html') {
       return 'login';
     } else if (filename === 'signup.html') {
@@ -122,7 +124,7 @@ const Auth = {
 
   // Check if page requires authentication
   requiresAuthentication(page) {
-    const protectedPages = ['dashboard', 'reports'];
+    const protectedPages = ['dashboard', 'reports', 'settings'];
     return protectedPages.includes(page);
   },
 
@@ -187,6 +189,7 @@ const Auth = {
     if (!header) return;
 
     const guestPages = ['index', 'login', 'signup'];
+    const appPages = ['dashboard', 'reports', 'settings'];
     
     if (guestPages.includes(page)) {
       // Guest pages - hide navigation, show minimal header
@@ -230,7 +233,7 @@ const Auth = {
           `;
         }
       }
-    } else {
+    } else if (appPages.includes(page)) {
       // App pages - show full navigation
       if (nav) {
         nav.style.display = 'flex';
