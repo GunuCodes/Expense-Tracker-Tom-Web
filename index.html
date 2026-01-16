@@ -25,23 +25,35 @@
     <header class="header">
         <div class="container">
             <div class="header__content">
-                <h1 class="header__title">💰 Expense Tracker</h1>
+                <!-- Logo/App Name -->
+                <div class="header__brand">
+                    <h1 class="header__title">ExpenseTracker</h1>
+                </div>
+
+                <!-- Navigation -->
                 <nav class="header__nav">
                     <ul class="nav__list">
                         <li class="nav__item">
                             <a href="#dashboard" class="nav__link nav__link--active">Dashboard</a>
                         </li>
                         <li class="nav__item">
-                            <a href="#expenses" class="nav__link">Expenses</a>
-                        </li>
-                        <li class="nav__item">
                             <a href="#reports" class="nav__link">Reports</a>
-                        </li>
-                        <li class="nav__item">
-                            <a href="#settings" class="nav__link">Settings</a>
                         </li>
                     </ul>
                 </nav>
+
+                <!-- User Section -->
+                <div class="header__user">
+                    <div class="user__avatar">
+                        <span class="user__initials">U</span>
+                    </div>
+                    <div class="user__info">
+                        <span class="user__name">User</span>
+                        <span class="user__status">Online</span>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
                 <button class="header__menu-toggle" aria-label="Toggle navigation menu">
                     <span class="menu-toggle__line"></span>
                     <span class="menu-toggle__line"></span>
