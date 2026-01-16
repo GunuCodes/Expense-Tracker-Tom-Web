@@ -56,10 +56,14 @@ const Settings = {
     }
     
     // Load profile picture if saved
-    if (profilePicturePreview && user.profilePicture) {
-      profilePicturePreview.src = user.profilePicture;
-    } else if (profilePicturePreview) {
-      profilePicturePreview.src = 'assets/images/avatars/default-avatar.svg';
+    if (profilePicturePreview) {
+      if (user.profilePicture) {
+        profilePicturePreview.src = user.profilePicture;
+        profilePicturePreview.setAttribute('data-profile-picture', user.profilePicture);
+      } else {
+        profilePicturePreview.src = 'assets/images/avatars/default-avatar.svg';
+        profilePicturePreview.removeAttribute('data-profile-picture');
+      }
     }
   },
 
@@ -266,9 +270,19 @@ const Settings = {
       
       // Get profile picture if it was uploaded
       const profilePicturePreview = document.getElementById('profilePicturePreview');
-      if (profilePicturePreview && profilePicturePreview.src && 
-          !profilePicturePreview.src.includes('default-avatar.svg')) {
-        currentUser.profilePicture = profilePicturePreview.src;
+      if (profilePicturePreview) {
+        // Get from data attribute first, then fall back to src
+        const pictureSrc = profilePicturePreview.getAttribute('data-profile-picture') || profilePicturePreview.src;
+        
+        // Only save if it's not the default avatar and is a valid image data URL
+        if (pictureSrc && 
+            !pictureSrc.includes('default-avatar.svg') && 
+            (pictureSrc.startsWith('data:image/') || pictureSrc.startsWith('blob:'))) {
+          currentUser.profilePicture = pictureSrc;
+        } else if (pictureSrc && pictureSrc.includes('default-avatar.svg')) {
+          // If user wants to reset to default, clear the profile picture
+          currentUser.profilePicture = null;
+        }
       }
 
       // Save to storage
@@ -278,6 +292,9 @@ const Settings = {
         users[userIndex].name = displayName;
         if (currentUser.profilePicture) {
           users[userIndex].profilePicture = currentUser.profilePicture;
+        } else {
+          // Remove profile picture if it was cleared
+          delete users[userIndex].profilePicture;
         }
         App.setToStorage(App.STORAGE_KEYS.USERS, users);
       }
@@ -290,8 +307,18 @@ const Settings = {
       
       // Update navigation to show new profile picture
       this.updateNavigationProfilePicture(currentUser.profilePicture);
+      
+      // Reload navigation UI to show updated profile picture
+      if (typeof Navigation !== 'undefined' && Navigation.updateAuthUI) {
+        Navigation.updateAuthUI(true);
+      }
+      if (typeof Auth !== 'undefined' && Auth.updateNavigationVisibility) {
+        Auth.updateNavigationVisibility(Auth.getCurrentPage(), true);
+      }
 
       App.showSuccessMessage('Profile updated successfully!');
+    } else {
+      App.showError('You must be logged in to update your profile');
     }
   },
 
@@ -390,24 +417,39 @@ const Settings = {
     reader.onload = (e) => {
       const preview = document.getElementById('profilePicturePreview');
       if (preview) {
+        // Store the data URL directly - this will be saved when form is submitted
         preview.src = e.target.result;
+        // Store in a data attribute for easy retrieval
+        preview.setAttribute('data-profile-picture', e.target.result);
       }
-      // Profile picture will be saved when form is submitted
+    };
+    reader.onerror = () => {
+      App.showError('Failed to read image file. Please try again.');
     };
     reader.readAsDataURL(file);
   },
   
   // Update navigation profile picture
   updateNavigationProfilePicture(profilePictureUrl) {
-    if (!profilePictureUrl) return;
-    
-    // Update avatar in navigation
+    // Update avatar in navigation - update all avatars
     const navAvatars = document.querySelectorAll('.avatar');
     navAvatars.forEach(avatar => {
-      if (avatar.src && avatar.src.includes('default-avatar.svg')) {
+      if (profilePictureUrl) {
         avatar.src = profilePictureUrl;
+      } else {
+        avatar.src = 'assets/images/avatars/default-avatar.svg';
       }
     });
+    
+    // Also update via Navigation and Auth if available
+    const currentUser = Auth.getCurrentUser() || App.currentUser;
+    if (currentUser && typeof Navigation !== 'undefined' && Navigation.updateAuthUI) {
+      Navigation.updateAuthUI(true);
+    }
+    if (currentUser && typeof Auth !== 'undefined' && Auth.updateNavigationVisibility) {
+      const currentPage = Auth.getCurrentPage ? Auth.getCurrentPage() : 'settings';
+      Auth.updateNavigationVisibility(currentPage, true);
+    }
   },
 
   // Show delete confirmation modal

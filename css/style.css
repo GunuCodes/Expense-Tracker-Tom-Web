@@ -4194,9 +4194,9 @@ img {
 }
 
 [data-theme="dark"] .footer {
-  background-color: var(--color-bg-secondary);
+  background: var(--gradient-primary);
   border-top-color: var(--color-border-light);
-  color: var(--color-text-secondary);
+  color: var(--color-white);
 }
 
 [data-theme="dark"] .nav__link {
@@ -4235,4 +4235,181 @@ img {
 
 [data-theme="dark"] .budget-visual__info {
   color: var(--color-text-secondary);
+}
+
+/* Fix white text on white backgrounds in dark mode */
+[data-theme="dark"] .expense-item__btn--edit:hover {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .expense-item__btn--delete:hover {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .btn--outline-white {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-medium);
+}
+
+[data-theme="dark"] .btn--outline-white:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-border-light);
+  color: var(--color-text-primary);
+}
+
+/* Footer - keep white text as it's on dark gradient background */
+[data-theme="dark"] .footer {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+}
+
+/* Hero section - keep white text as it's on dark gradient background */
+[data-theme="dark"] .hero {
+  background: var(--gradient-hero);
+  color: var(--color-white);
+}
+
+/* Buttons with white text that need dark mode fixes */
+[data-theme="dark"] .btn--primary {
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .btn--primary:hover {
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .btn--danger {
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .btn--danger:hover {
+  color: var(--color-white);
+}
+
+/* Text elements that should be dark in dark mode */
+[data-theme="dark"] .hero__title,
+[data-theme="dark"] .hero__subtitle,
+[data-theme="dark"] .hero__description {
+  color: var(--color-white);
+}
+
+/* Cards and sections with white backgrounds need dark text */
+[data-theme="dark"] .card__title,
+[data-theme="dark"] .card__subtitle,
+[data-theme="dark"] .settings-section__title,
+[data-theme="dark"] .settings-section__body,
+[data-theme="dark"] .expense-item__title,
+[data-theme="dark"] .expense-item__category,
+[data-theme="dark"] .expense-item__amount,
+[data-theme="dark"] .expense-item__date {
+  color: var(--color-text-primary);
+}
+
+/* Metrics and stats */
+[data-theme="dark"] .metric-card__value,
+[data-theme="dark"] .metric-card__label,
+[data-theme="dark"] .metric-card__change {
+  color: var(--color-text-primary);
+}
+
+/* Form elements */
+[data-theme="dark"] .form__input::placeholder,
+[data-theme="dark"] .form__select option {
+  color: var(--color-text-tertiary);
+}
+
+/* Navigation links */
+[data-theme="dark"] .nav__link span {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .nav__link--active span {
+  color: var(--color-primary-400);
+}
+
+/* User info in header */
+[data-theme="dark"] .user__name {
+  color: var(--color-text-primary);
+}
+
+/* Empty states */
+[data-theme="dark"] .empty-state__title,
+[data-theme="dark"] .empty-state__message {
+  color: var(--color-text-secondary);
+}
+
+/* Feature cards - white text variants need dark text in dark mode */
+[data-theme="dark"] .feature-card__title--white {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .feature-card__description--white {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .feature-card__icon--landing {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .feature-card__icon--landing i {
+  color: var(--color-text-primary);
+}
+
+/* CTA section - keep white text as it's on dark gradient */
+[data-theme="dark"] .cta {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+}
+
+/* Auth card messages - keep white text on colored backgrounds */
+[data-theme="dark"] .auth-card__message--success {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .auth-card__message--error {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+/* Metric card icon - keep white text on gradient background */
+[data-theme="dark"] .metric-card__icon {
+  color: var(--color-white);
+}
+
+/* Expense item buttons - adjust hover colors for better contrast */
+[data-theme="dark"] .expense-item__btn--edit {
+  color: var(--color-primary-400);
+  border-color: var(--color-primary-500);
+}
+
+[data-theme="dark"] .expense-item__btn--edit:hover {
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .expense-item__btn--delete {
+  color: var(--color-error-400);
+  border-color: var(--color-error-500);
+}
+
+[data-theme="dark"] .expense-item__btn--delete:hover {
+  background-color: var(--color-error-500);
+  color: var(--color-white);
+}
+
+/* Modal overlay text */
+[data-theme="dark"] .modal__overlay-text {
+  color: var(--color-text-primary);
+}
+
+/* Any other white text on light backgrounds */
+[data-theme="dark"] .text-white {
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
 }
