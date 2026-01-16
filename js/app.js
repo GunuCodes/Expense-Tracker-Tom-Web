@@ -96,6 +96,93 @@ const App = {
     if (dateFilter) {
       dateFilter.addEventListener('change', this.filterExpenses.bind(this));
     }
+
+    // Modal buttons
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const closeLoginBtn = document.getElementById('closeLoginBtn');
+    const closeSignupBtn = document.getElementById('closeSignupBtn');
+    const switchToSignup = document.getElementById('switchToSignup');
+    const switchToLogin = document.getElementById('switchToLogin');
+
+    if (loginBtn) {
+      loginBtn.addEventListener('click', () => this.openModal('login'));
+    }
+
+    if (signupBtn) {
+      signupBtn.addEventListener('click', () => this.openModal('signup'));
+    }
+
+    if (closeLoginBtn) {
+      closeLoginBtn.addEventListener('click', () => this.closeModal('login'));
+    }
+
+    if (closeSignupBtn) {
+      closeSignupBtn.addEventListener('click', () => this.closeModal('signup'));
+    }
+
+    if (switchToSignup) {
+      switchToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closeModal('login');
+        setTimeout(() => this.openModal('signup'), 200);
+      });
+    }
+
+    if (switchToLogin) {
+      switchToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closeModal('signup');
+        setTimeout(() => this.openModal('login'), 200);
+      });
+    }
+
+    // Close modal on backdrop click
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal__backdrop')) {
+        const modal = e.target.closest('.modal');
+        if (modal) {
+          const modalId = modal.id === 'loginModal' ? 'login' : 'signup';
+          this.closeModal(modalId);
+        }
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const loginModal = document.getElementById('loginModal');
+        const signupModal = document.getElementById('signupModal');
+        
+        if (loginModal && loginModal.classList.contains('modal--open')) {
+          this.closeModal('login');
+        } else if (signupModal && signupModal.classList.contains('modal--open')) {
+          this.closeModal('signup');
+        }
+      }
+    });
+
+    // Handle form submissions (frontend only - prevent default)
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Frontend only - just close the modal for now
+        this.showSuccessMessage('Login functionality coming soon!');
+        this.closeModal('login');
+      });
+    }
+
+    if (signupForm) {
+      signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Frontend only - just close the modal for now
+        this.showSuccessMessage('Sign up functionality coming soon!');
+        this.closeModal('signup');
+      });
+    }
   },
 
   // Toggle mobile menu
@@ -763,6 +850,47 @@ const App = {
   updateCharts() {
     if (typeof Charts !== 'undefined') {
       Charts.updateCharts(this.expenses);
+    }
+  },
+
+  // ========================================
+  // MODAL MANAGEMENT
+  // ========================================
+
+  // Open modal
+  openModal(type) {
+    const modalId = type === 'login' ? 'loginModal' : 'signupModal';
+    const modal = document.getElementById(modalId);
+    
+    if (modal) {
+      modal.classList.add('modal--open');
+      document.body.classList.add('body--modal-open');
+      
+      // Focus on first input
+      const firstInput = modal.querySelector('input');
+      if (firstInput) {
+        setTimeout(() => firstInput.focus(), 100);
+      }
+    }
+  },
+
+  // Close modal
+  closeModal(type) {
+    const modalId = type === 'login' ? 'loginModal' : 'signupModal';
+    const modal = document.getElementById(modalId);
+    
+    if (modal) {
+      modal.classList.remove('modal--open');
+      
+      // Check if any other modal is open
+      const loginModal = document.getElementById('loginModal');
+      const signupModal = document.getElementById('signupModal');
+      const anyModalOpen = (loginModal && loginModal.classList.contains('modal--open')) ||
+                          (signupModal && signupModal.classList.contains('modal--open'));
+      
+      if (!anyModalOpen) {
+        document.body.classList.remove('body--modal-open');
+      }
     }
   }
 };

@@ -42,15 +42,10 @@
                     </ul>
                 </nav>
 
-                <!-- User Section -->
-                <div class="header__user">
-                    <div class="user__avatar">
-                        <span class="user__initials">U</span>
-                    </div>
-                    <div class="user__info">
-                        <span class="user__name">User</span>
-                        <span class="user__status">Online</span>
-                    </div>
+                <!-- Auth Buttons -->
+                <div class="header__auth">
+                    <button class="btn-auth btn-auth--login" id="loginBtn">Login</button>
+                    <button class="btn-auth btn-auth--signup" id="signupBtn">Sign Up</button>
                 </div>
 
                 <!-- Mobile Menu Toggle -->
@@ -300,6 +295,121 @@
             </div>
         </div>
     </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <button class="modal__close" aria-label="Close modal" id="closeLoginBtn">&times;</button>
+            <div class="modal__header">
+                <h2 class="modal__title">Login</h2>
+                <p class="modal__subtitle">Welcome back! Please login to your account.</p>
+            </div>
+            <form class="modal__form" id="loginForm">
+                <div class="form__group">
+                    <label for="loginEmail" class="form__label">Email</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        name="email" 
+                        class="form__input" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                <div class="form__group">
+                    <label for="loginPassword" class="form__label">Password</label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        name="password" 
+                        class="form__input" 
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+                <div class="form__group form__group--checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="remember" class="checkbox-input">
+                        <span class="checkbox-text">Remember me</span>
+                    </label>
+                    <a href="#forgot" class="form__link">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full">Login</button>
+            </form>
+            <div class="modal__footer">
+                <p class="modal__footer-text">Don't have an account? <a href="#" class="modal__link" id="switchToSignup">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <button class="modal__close" aria-label="Close modal" id="closeSignupBtn">&times;</button>
+            <div class="modal__header">
+                <h2 class="modal__title">Sign Up</h2>
+                <p class="modal__subtitle">Create a new account to get started.</p>
+            </div>
+            <form class="modal__form" id="signupForm">
+                <div class="form__group">
+                    <label for="signupName" class="form__label">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="signupName" 
+                        name="name" 
+                        class="form__input" 
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+                <div class="form__group">
+                    <label for="signupEmail" class="form__label">Email</label>
+                    <input 
+                        type="email" 
+                        id="signupEmail" 
+                        name="email" 
+                        class="form__input" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                <div class="form__group">
+                    <label for="signupPassword" class="form__label">Password</label>
+                    <input 
+                        type="password" 
+                        id="signupPassword" 
+                        name="password" 
+                        class="form__input" 
+                        placeholder="Create a password"
+                        required
+                    >
+                </div>
+                <div class="form__group">
+                    <label for="signupConfirmPassword" class="form__label">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="signupConfirmPassword" 
+                        name="confirmPassword" 
+                        class="form__input" 
+                        placeholder="Confirm your password"
+                        required
+                    >
+                </div>
+                <div class="form__group form__group--checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="terms" class="checkbox-input" required>
+                        <span class="checkbox-text">I agree to the <a href="#terms" class="form__link">Terms of Service</a> and <a href="#privacy" class="form__link">Privacy Policy</a></span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full">Sign Up</button>
+            </form>
+            <div class="modal__footer">
+                <p class="modal__footer-text">Already have an account? <a href="#" class="modal__link" id="switchToLogin">Login</a></p>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript -->
     <script src="js/app.js"></script>
