@@ -20,29 +20,36 @@ const Auth = {
     this.setupRouteProtection();
   },
 
-  // Check authentication state from storage
-  checkAuthState() {
+  // Check authentication state from storage and API
+  async checkAuthState() {
     try {
       const savedUser = localStorage.getItem(this.STORAGE_KEYS.CURRENT_USER);
       const sessionToken = localStorage.getItem(this.STORAGE_KEYS.SESSION_TOKEN);
 
-      if (savedUser && sessionToken) {
-        this.currentUser = JSON.parse(savedUser);
-        this.isAuthenticated = true;
-        
-        // Validate session token (simple check - in production, validate with server)
-        if (this.validateSession(sessionToken)) {
-          return true;
-        } else {
-          // Invalid session, clear it
-          this.logout();
-          return false;
+      if (savedUser && sessionToken && typeof API !== 'undefined') {
+        // Verify token with API
+        try {
+          const response = await API.verifyToken();
+          if (response && response.user) {
+            this.currentUser = response.user;
+            this.isAuthenticated = true;
+            // Update stored user data
+            localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
+            return true;
+          }
+        } catch (error) {
+          console.log('Token verification failed, clearing auth');
         }
-      } else {
-        this.currentUser = null;
-        this.isAuthenticated = false;
-        return false;
       }
+
+      // No valid session
+      this.currentUser = null;
+      this.isAuthenticated = false;
+      // Force light mode for logged out users
+      if (typeof App !== 'undefined' && App.applySettings) {
+        App.applySettings();
+      }
+      return false;
     } catch (error) {
       console.error('Error checking auth state:', error);
       this.logout();
@@ -309,19 +316,17 @@ const Auth = {
      }
   },
 
-  // Login user
-  login(user) {
+  // Login user (with API token)
+  login(user, token = null) {
     try {
-      // Create session token (simple implementation)
-      const sessionToken = btoa(JSON.stringify({
-        userId: user.id,
-        email: user.email,
-        exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
-      }));
-
-      // Store user and session
+      // Store user and token
       localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
-      localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, sessionToken);
+      if (token) {
+        if (typeof API !== 'undefined') {
+          API.setToken(token);
+        }
+        localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, token);
+      }
 
       this.currentUser = user;
       this.isAuthenticated = true;
@@ -351,6 +356,8 @@ const Auth = {
       // Update UI
       if (typeof App !== 'undefined') {
         App.currentUser = null;
+        // Force light mode when logged out
+        App.applySettings();
       }
 
       return true;

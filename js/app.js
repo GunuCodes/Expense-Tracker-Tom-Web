@@ -10,25 +10,22 @@ const App = {
   currentUser: null,
   
   // Initialize the application
-  init() {
+  async init() {
     console.log('Expense Tracker App initialized');
-    
-    // Ensure admin account exists
-    this.ensureAdminAccount();
     
     // Apply settings (theme, currency) first
     this.applySettings();
     
     // Wait for Auth to initialize first
     if (typeof Auth !== 'undefined' && Auth.checkAuthState) {
-      Auth.checkAuthState();
+      await Auth.checkAuthState();
       this.currentUser = Auth.getCurrentUser();
     } else {
       this.checkAuthState();
     }
     
     this.setupEventListeners();
-    this.loadData();
+    await this.loadData();
     
     // Initialize page-specific features
     this.initializePageFeatures();
@@ -60,11 +57,23 @@ const App = {
 
   // Apply settings (theme, currency)
   applySettings() {
+    // Check if user is logged in
+    const isAuthenticated = (typeof Auth !== 'undefined' && Auth.isUserAuthenticated && Auth.isUserAuthenticated()) ||
+                           (this.currentUser !== null);
+    
+    // Force light mode for logged out users
+    if (!isAuthenticated) {
+      document.body.setAttribute('data-theme', 'light');
+      return;
+    }
+    
     const settings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS) || this.getDefaultSettings();
     
     // Apply theme
     if (settings.theme) {
-      document.body.setAttribute('data-theme', settings.theme);
+        document.body.setAttribute('data-theme', settings.theme);
+    } else {
+      document.body.setAttribute('data-theme', 'light');
     }
   },
 
@@ -168,12 +177,11 @@ const App = {
 
 
   // Handle form submission
-  handleFormSubmit(e) {
+  async handleFormSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
     const expense = {
-      id: Date.now(),
       amount: parseFloat(formData.get('amount')),
       description: formData.get('description'),
       category: formData.get('category'),
@@ -182,9 +190,8 @@ const App = {
 
     // Validate form
     if (this.validateExpense(expense)) {
-      this.addExpense(expense);
+      await this.addExpense(expense);
       e.target.reset();
-      this.showSuccessMessage('Expense added successfully!');
     }
   },
 
@@ -213,13 +220,6 @@ const App = {
     return true;
   },
 
-  // Add expense to the list
-  addExpense(expense) {
-    this.expenses.push(expense);
-    this.saveData();
-    this.updateExpenseList();
-    this.updateCharts();
-  },
 
   // Update expense list display
   updateExpenseList() {
@@ -239,7 +239,11 @@ const App = {
 
     expenseItems.innerHTML = this.expenses
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .map(expense => this.createExpenseItem(expense))
+      .map(expense => {
+        // Use MongoDB _id if available, otherwise use id
+        const expenseId = expense._id || expense.id;
+        return this.createExpenseItem({ ...expense, id: expenseId });
+      })
       .join('');
     
     // Setup event listeners for edit/delete buttons using event delegation
@@ -258,7 +262,7 @@ const App = {
 
       const action = button.getAttribute('data-action');
       const expenseItem = button.closest('.expense-item');
-      const expenseId = parseInt(expenseItem.getAttribute('data-expense-id'));
+      const expenseId = expenseItem.getAttribute('data-expense-id');
 
       if (action === 'edit') {
         this.showEditForm(expenseId);
@@ -368,11 +372,16 @@ const App = {
   },
 
   // Show edit form for expense
-  showEditForm(expenseId) {
-    const expense = this.getExpense(expenseId);
+  async showEditForm(expenseId) {
+    const expense = await this.getExpense(expenseId);
     if (!expense) return;
 
-    const expenseItem = document.querySelector(`[data-expense-id="${expenseId}"]`);
+    // Use MongoDB _id if available, otherwise use the provided id
+    const expenseIdToUse = expense._id || expense.id || expenseId;
+    
+    // Find expense item by either id
+    const expenseItem = document.querySelector(`[data-expense-id="${expenseId}"]`) ||
+                       document.querySelector(`[data-expense-id="${expenseIdToUse}"]`);
     if (!expenseItem || expenseItem.classList.contains('expense-item--editing')) return;
 
     expenseItem.classList.add('expense-item--editing');
@@ -393,7 +402,7 @@ const App = {
         <div class="expense-item__edit-header">
           <h4 class="expense-item__edit-title">Edit Expense</h4>
         </div>
-        <form class="expense-item__edit-form-inner" data-expense-id="${expenseId}">
+        <form class="expense-item__edit-form-inner" data-expense-id="${expenseIdToUse}">
           <div class="form__group">
             <label for="editAmount_${expenseId}" class="form__label">Amount</label>
             <div class="form__input-wrapper">
@@ -468,9 +477,11 @@ const App = {
     // Handle form submission
     const form = expenseItem.querySelector('form');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        this.saveEditedExpense(expenseId, form);
+        // Use MongoDB _id if available
+        const idToUse = expense._id || expense.id || expenseId;
+        await this.saveEditedExpense(idToUse, form);
       });
     }
 
@@ -484,7 +495,7 @@ const App = {
   },
 
   // Save edited expense
-  saveEditedExpense(expenseId, form) {
+  async saveEditedExpense(expenseId, form) {
     const formData = new FormData(form);
     const updatedData = {
       amount: parseFloat(formData.get('amount')),
@@ -499,9 +510,7 @@ const App = {
     }
 
     // Update expense
-    if (this.updateExpense(expenseId, updatedData)) {
-      // Expense list will be refreshed by updateExpense method
-    }
+    await this.updateExpense(expenseId, updatedData);
   },
 
   // Cancel edit
@@ -510,8 +519,8 @@ const App = {
   },
 
   // Handle delete expense - show custom modal
-  handleDeleteExpense(expenseId) {
-    const expense = this.getExpense(expenseId);
+  async handleDeleteExpense(expenseId) {
+    const expense = await this.getExpense(expenseId);
     if (!expense) return;
 
     this.showDeleteModal(expense);
@@ -563,8 +572,9 @@ const App = {
       </div>
     `;
 
-    // Store expense ID for deletion
-    modal.setAttribute('data-expense-id', expense.id);
+    // Store expense ID for deletion (use MongoDB _id if available)
+    const expenseId = expense._id || expense.id;
+    modal.setAttribute('data-expense-id', expenseId);
 
     // Show modal
     modal.classList.add('modal--open');
@@ -601,7 +611,7 @@ const App = {
     // Confirm delete button
     if (confirmBtn) {
       confirmBtn.addEventListener('click', () => {
-        const expenseId = parseInt(modal.getAttribute('data-expense-id'));
+        const expenseId = modal.getAttribute('data-expense-id');
         if (expenseId) {
           this.confirmDelete(expenseId);
         }
@@ -639,7 +649,7 @@ const App = {
   },
 
   // Confirm and execute deletion
-  confirmDelete(expenseId) {
+  async confirmDelete(expenseId) {
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     if (!confirmBtn) return;
 
@@ -647,15 +657,17 @@ const App = {
     confirmBtn.classList.add('btn--loading');
     confirmBtn.disabled = true;
 
+    try {
     // Small delay for visual feedback, then delete
-    setTimeout(() => {
-      this.deleteExpense(expenseId);
+      await this.deleteExpense(expenseId);
       this.closeDeleteModal();
-      
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    } finally {
       // Reset button state
       confirmBtn.classList.remove('btn--loading');
       confirmBtn.disabled = false;
-    }, 300);
+    }
   },
 
   // Show success message
@@ -711,19 +723,38 @@ const App = {
     { id: 'other', name: 'Other', icon: '📋', color: '#6b7280' }
   ],
 
-  // Load data from localStorage with error handling
-  loadData() {
+  // Load data from API or localStorage with error handling
+  async loadData() {
     try {
-      // Load expenses
+      // Load expenses from API
+      if (typeof API !== 'undefined' && API.getExpenses) {
+        try {
+          const expenses = await API.getExpenses();
+          this.expenses = expenses.map(expense => ({
+            id: expense._id || expense.id,
+            ...expense
+          }));
+        } catch (error) {
+          console.error('Error loading expenses from API:', error);
+          // Fallback to localStorage
       const savedExpenses = this.getFromStorage(this.STORAGE_KEYS.EXPENSES);
       if (savedExpenses && Array.isArray(savedExpenses)) {
         this.expenses = savedExpenses;
       } else {
-        this.expenses = this.getDemoExpenses();
-        this.saveExpenses();
+            this.expenses = [];
+          }
+        }
+      } else {
+        // Fallback to localStorage
+        const savedExpenses = this.getFromStorage(this.STORAGE_KEYS.EXPENSES);
+        if (savedExpenses && Array.isArray(savedExpenses)) {
+          this.expenses = savedExpenses;
+        } else {
+          this.expenses = [];
+        }
       }
 
-      // Load categories
+      // Load categories (always from default, not stored in DB)
       const savedCategories = this.getFromStorage(this.STORAGE_KEYS.CATEGORIES);
       if (savedCategories && Array.isArray(savedCategories)) {
         this.categories = savedCategories;
@@ -732,9 +763,31 @@ const App = {
         this.saveCategories();
       }
 
-      // Load settings
+      // Load settings from API
+      if (typeof API !== 'undefined' && API.getSettings) {
+        try {
+          const settingsData = await API.getSettings();
+          this.settings = {
+            theme: settingsData.theme || 'light',
+            currency: settingsData.currency || 'USD',
+            dateFormat: settingsData.dateFormat || 'MM/DD/YYYY',
+            notifications: settingsData.notifications !== undefined ? settingsData.notifications : true
+          };
+          // Apply settings immediately
+          this.applySettings();
+        } catch (error) {
+          console.error('Error loading settings from API:', error);
+          // Fallback to localStorage
       const savedSettings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS);
       this.settings = savedSettings || this.getDefaultSettings();
+          this.applySettings();
+        }
+      } else {
+        // Fallback to localStorage
+        const savedSettings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS);
+        this.settings = savedSettings || this.getDefaultSettings();
+        this.applySettings();
+      }
       
       this.updateExpenseList();
       console.log('Data loaded successfully:', {
@@ -750,8 +803,11 @@ const App = {
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      this.showError('Failed to load saved data. Using demo data.');
-      this.initializeWithDemoData();
+      this.showError('Failed to load saved data.');
+      this.expenses = [];
+      this.categories = [...this.defaultCategories];
+      this.settings = this.getDefaultSettings();
+      this.updateExpenseList();
       
       // Initialize charts if on reports page
       if (this.getCurrentPage() === 'reports') {
@@ -1001,9 +1057,28 @@ const App = {
   // CRUD OPERATIONS
   // ========================================
 
-  // Create - Add new expense
-  addExpense(expense) {
+  // Create - Add new expense (using API)
+  async addExpense(expense) {
     try {
+      if (typeof API !== 'undefined' && API.createExpense) {
+        const newExpense = await API.createExpense({
+          amount: parseFloat(expense.amount),
+          description: expense.description.trim(),
+          category: expense.category,
+          date: expense.date
+        });
+        
+        // Add to local array for immediate UI update
+        this.expenses.push({
+          id: newExpense._id || newExpense.id,
+          ...newExpense
+        });
+        this.updateExpenseList();
+        this.updateCharts();
+        this.showSuccessMessage('Expense added successfully!');
+        return newExpense;
+      } else {
+        // Fallback to localStorage if API not available
       const newExpense = {
         id: Date.now(),
         amount: parseFloat(expense.amount),
@@ -1013,28 +1088,65 @@ const App = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-
       this.expenses.push(newExpense);
       this.saveExpenses();
       this.updateExpenseList();
       this.updateCharts();
       this.showSuccessMessage('Expense added successfully!');
       return newExpense;
+      }
     } catch (error) {
       console.error('Error adding expense:', error);
-      this.showError('Failed to add expense. Please try again.');
+      this.showError(error.message || 'Failed to add expense. Please try again.');
       return null;
     }
   },
 
   // Read - Get expense by ID
-  getExpense(id) {
-    return this.expenses.find(expense => expense.id === id);
+  async getExpense(id) {
+    try {
+      if (typeof API !== 'undefined' && API.getExpense) {
+        const expense = await API.getExpense(id);
+        return expense;
+      } else {
+        // Fallback to local array
+        return this.expenses.find(expense => expense.id === id || expense._id === id);
+      }
+    } catch (error) {
+      console.error('Error getting expense:', error);
+      // Fallback to local array
+      return this.expenses.find(expense => expense.id === id || expense._id === id);
+    }
   },
 
-  // Update - Update existing expense
-  updateExpense(id, updatedData) {
+  // Update - Update existing expense (using API)
+  async updateExpense(id, updatedData) {
     try {
+      if (typeof API !== 'undefined' && API.updateExpense) {
+        const updatedExpense = await API.updateExpense(id, updatedData);
+        
+        // Update local array
+        const index = this.expenses.findIndex(expense => 
+          expense.id === id || expense._id === id || expense.id === updatedExpense._id
+        );
+        if (index !== -1) {
+          this.expenses[index] = {
+            id: updatedExpense._id || updatedExpense.id,
+            ...updatedExpense
+          };
+        } else {
+          this.expenses.push({
+            id: updatedExpense._id || updatedExpense.id,
+            ...updatedExpense
+          });
+        }
+        
+        this.updateExpenseList();
+        this.updateCharts();
+        this.showSuccessMessage('Expense updated successfully!');
+        return true;
+      } else {
+        // Fallback to localStorage
       const index = this.expenses.findIndex(expense => expense.id === id);
       if (index === -1) {
         this.showError('Expense not found.');
@@ -1052,16 +1164,34 @@ const App = {
       this.updateCharts();
       this.showSuccessMessage('Expense updated successfully!');
       return true;
+      }
     } catch (error) {
       console.error('Error updating expense:', error);
-      this.showError('Failed to update expense. Please try again.');
+      this.showError(error.message || 'Failed to update expense. Please try again.');
       return false;
     }
   },
 
-  // Delete - Remove expense
-  deleteExpense(id) {
+  // Delete - Remove expense (using API)
+  async deleteExpense(id) {
     try {
+      if (typeof API !== 'undefined' && API.deleteExpense) {
+        await API.deleteExpense(id);
+        
+        // Remove from local array
+        const index = this.expenses.findIndex(expense => 
+          expense.id === id || expense._id === id
+        );
+        if (index !== -1) {
+          this.expenses.splice(index, 1);
+        }
+        
+        this.updateExpenseList();
+        this.updateCharts();
+        this.showSuccessMessage('Expense deleted successfully!');
+        return true;
+      } else {
+        // Fallback to localStorage
       const index = this.expenses.findIndex(expense => expense.id === id);
       if (index === -1) {
         this.showError('Expense not found.');
@@ -1074,9 +1204,10 @@ const App = {
       this.updateCharts();
       this.showSuccessMessage('Expense deleted successfully!');
       return true;
+      }
     } catch (error) {
       console.error('Error deleting expense:', error);
-      this.showError('Failed to delete expense. Please try again.');
+      this.showError(error.message || 'Failed to delete expense. Please try again.');
       return false;
     }
   },
@@ -1264,7 +1395,7 @@ const App = {
   },
 
   // Handle signup
-  handleSignup(form) {
+  async handleSignup(form) {
     const formData = new FormData(form);
     const name = formData.get('name').trim();
     const email = formData.get('email').trim().toLowerCase();
@@ -1296,49 +1427,22 @@ const App = {
       return;
     }
 
-    // Ensure admin account exists
-    this.ensureAdminAccount();
-
     if (!terms) {
       this.showAuthMessage('signup', 'Please agree to the Terms of Service and Privacy Policy', 'error');
       return;
     }
 
-    // Check if user already exists
-    const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
-    const existingUser = users.find(user => user.email === email);
-    
-    if (existingUser) {
-      this.showAuthMessage('signup', 'An account with this email already exists. Please login instead.', 'error');
-      return;
-    }
-
-    // Create new user
-    const newUser = {
-      id: Date.now(),
-      name: name,
-      email: email,
-      password: password, // In production, this should be hashed
-      createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    this.setToStorage(this.STORAGE_KEYS.USERS, users);
+    // Use API to signup
+    try {
+      if (typeof API !== 'undefined') {
+        const response = await API.signup({ name, email, password });
 
     // Auto-login after signup
-    const currentUser = {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email
-    };
-    
-    // Use Auth manager to login
+        if (response.user && response.token) {
     if (typeof Auth !== 'undefined' && Auth.login) {
-      Auth.login(currentUser);
-    } else {
-      // Fallback to direct storage
-      this.currentUser = currentUser;
-      this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, currentUser);
+            Auth.login(response.user, response.token);
+          }
+          this.currentUser = response.user;
     }
 
     this.showAuthMessage('signup', `Welcome, ${name}! Your account has been created successfully. Redirecting...`, 'success');
@@ -1347,10 +1451,17 @@ const App = {
     setTimeout(() => {
       window.location.href = 'dashboard.html';
     }, 1500);
+      } else {
+        // Fallback to localStorage if API not available
+        this.showAuthMessage('signup', 'API not available. Please ensure the server is running.', 'error');
+      }
+    } catch (error) {
+      this.showAuthMessage('signup', error.message || 'Failed to create account. Please try again.', 'error');
+    }
   },
 
   // Handle login
-  handleLogin(form) {
+  async handleLogin(form) {
     const formData = new FormData(form);
     const email = formData.get('email').trim().toLowerCase();
     const password = formData.get('password');
@@ -1375,40 +1486,32 @@ const App = {
       return;
     }
 
-    // Ensure admin account exists
-    this.ensureAdminAccount();
-
-    // Check credentials
-    const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
-    const user = users.find(u => u.email === email && u.password === password);
-
-    if (!user) {
-      this.showAuthMessage('login', 'Invalid email or password. Please try again.', 'error');
-      return;
-    }
-
-    // Set current user
-    const currentUser = {
-      id: user.id,
-      name: user.name,
-      email: user.email
-    };
-    
+    // Use API to login
+    try {
+      if (typeof API !== 'undefined') {
+        const response = await API.login(email, password);
+        
+        if (response.user && response.token) {
     // Use Auth manager to login
     if (typeof Auth !== 'undefined' && Auth.login) {
-      Auth.login(currentUser);
-    } else {
-      // Fallback to direct storage
-      this.currentUser = currentUser;
-      this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, currentUser);
-    }
+            Auth.login(response.user, response.token);
+          }
+          this.currentUser = response.user;
 
-    this.showAuthMessage('login', `Welcome back, ${user.name}! Redirecting...`, 'success');
+          this.showAuthMessage('login', `Welcome back, ${response.user.name}! Redirecting...`, 'success');
     
     // Redirect to dashboard after short delay
     setTimeout(() => {
       window.location.href = 'dashboard.html';
     }, 1500);
+        }
+      } else {
+        // Fallback to localStorage if API not available
+        this.showAuthMessage('login', 'API not available. Please ensure the server is running.', 'error');
+      }
+    } catch (error) {
+      this.showAuthMessage('login', error.message || 'Invalid email or password. Please try again.', 'error');
+    }
   },
 
   // Handle logout
@@ -1443,6 +1546,6 @@ const App = {
 };
 
 // Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  App.init();
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
 });

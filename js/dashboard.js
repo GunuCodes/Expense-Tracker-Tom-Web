@@ -64,19 +64,17 @@ const Dashboard = {
   },
 
   // Handle expense form submission
-  handleExpenseSubmit(form) {
+  async handleExpenseSubmit(form) {
     const formData = new FormData(form);
     const expense = {
-      id: Date.now(),
       amount: parseFloat(formData.get('amount')),
       description: formData.get('description'),
       category: formData.get('category'),
-      date: formData.get('date'),
-      createdAt: new Date().toISOString()
+      date: formData.get('date')
     };
 
     if (App.validateExpense && App.validateExpense(expense)) {
-      App.addExpense(expense);
+      await App.addExpense(expense);
       
       // Reset form and set today's date
       form.reset();
@@ -91,11 +89,9 @@ const Dashboard = {
       this.updateRecentTransactions();
       this.updateBudgetProgress();
       this.updateExpenseList();
-      
-      App.showSuccessMessage('Expense added successfully!');
     } else if (!App.validateExpense) {
       // Fallback if validateExpense doesn't exist
-      App.addExpense(expense);
+      await App.addExpense(expense);
       form.reset();
       const dateInput = document.getElementById('expenseDate');
       if (dateInput) {
@@ -106,7 +102,6 @@ const Dashboard = {
       this.updateRecentTransactions();
       this.updateBudgetProgress();
       this.updateExpenseList();
-      App.showSuccessMessage('Expense added successfully!');
     }
   },
 

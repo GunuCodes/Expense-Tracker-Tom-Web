@@ -5,42 +5,94 @@
 
 const Settings = {
   // Initialize settings page
-  init() {
+  async init() {
     console.log('Settings page initialized');
     
     // Setup event listeners immediately
     this.setupEventListeners();
     
-    // Wait for App to load data
+    // Load settings from API
+    await this.loadUserSettings();
+    
+    // Wait for App to load data for budget visual
     if (App.expenses && App.expenses.length > 0) {
-      this.loadUserSettings();
       this.updateBudgetVisual();
     } else {
       // Wait a bit for data to load
       setTimeout(() => {
-        this.loadUserSettings();
         this.updateBudgetVisual();
       }, 300);
     }
   },
 
-  // Load user settings from storage
-  loadUserSettings() {
+  // Load user settings from API
+  async loadUserSettings() {
     try {
-      // Get current user
+      // Get current user from API
+      if (typeof API !== 'undefined' && API.getCurrentUser) {
+        try {
+          const response = await API.getCurrentUser();
+          if (response && response.user) {
+            this.loadProfileSettings(response.user);
+          }
+        } catch (error) {
+          console.error('Error loading user from API:', error);
+          // Fallback to local storage
+          const currentUser = Auth.getCurrentUser() || App.currentUser;
+          if (currentUser) {
+            this.loadProfileSettings(currentUser);
+          }
+        }
+      } else {
+        // Fallback to local storage
       const currentUser = Auth.getCurrentUser() || App.currentUser;
       if (currentUser) {
-        // Load profile settings
         this.loadProfileSettings(currentUser);
       }
+      }
 
-      // Load preferences
+      // Load preferences from API
+      if (typeof API !== 'undefined' && API.getSettings) {
+        try {
+          const settingsData = await API.getSettings();
+          const settings = {
+            theme: settingsData.theme || 'light',
+            currency: settingsData.currency || 'USD',
+            dateFormat: settingsData.dateFormat || 'MM/DD/YYYY',
+            notifications: settingsData.notifications !== undefined ? settingsData.notifications : true
+          };
+          this.loadPreferences(settings);
+        } catch (error) {
+          console.error('Error loading settings from API:', error);
+          // Fallback to localStorage
+          const settings = App.getFromStorage(App.STORAGE_KEYS.SETTINGS) || App.getDefaultSettings();
+          this.loadPreferences(settings);
+        }
+      } else {
+        // Fallback to localStorage
       const settings = App.getFromStorage(App.STORAGE_KEYS.SETTINGS) || App.getDefaultSettings();
       this.loadPreferences(settings);
+      }
 
-      // Load budget settings
+      // Load budget settings from API
+      if (typeof API !== 'undefined' && API.getBudget) {
+        try {
+          const budgetData = await API.getBudget();
+          const budgetSettings = {
+            monthlyBudget: budgetData.monthlyBudget || 3000
+          };
+          this.loadBudgetSettings(budgetSettings);
+        } catch (error) {
+          console.error('Error loading budget from API:', error);
+          // Fallback to localStorage
+          const budgetSettings = this.getBudgetSettings();
+          this.loadBudgetSettings(budgetSettings);
+        }
+      } else {
+        // Fallback to localStorage
       const budgetSettings = this.getBudgetSettings();
       this.loadBudgetSettings(budgetSettings);
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -95,7 +147,7 @@ const Settings = {
     this.updateBudgetVisual();
   },
 
-  // Get budget settings
+  // Get budget settings (fallback to localStorage)
   getBudgetSettings() {
     try {
       const budgetData = localStorage.getItem('expenseTrackerBudgetSettings');
@@ -109,7 +161,7 @@ const Settings = {
     }
   },
 
-  // Save budget settings
+  // Save budget settings (fallback to localStorage)
   saveBudgetSettings(budgetSettings) {
     try {
       localStorage.setItem('expenseTrackerBudgetSettings', JSON.stringify(budgetSettings));
@@ -253,8 +305,8 @@ const Settings = {
     });
   },
 
-  // Handle profile form submission
-  handleProfileSubmit(form) {
+  // Handle profile form submission (using API)
+  async handleProfileSubmit(form) {
     const formData = new FormData(form);
     const displayName = formData.get('displayName').trim();
 
@@ -263,67 +315,85 @@ const Settings = {
       return;
     }
 
-    // Update user
+    // Get profile picture if it was uploaded
+    const profilePicturePreview = document.getElementById('profilePicturePreview');
+    let profilePicture = null;
+    
+    if (profilePicturePreview) {
+      // Get from data attribute first, then fall back to src
+      const pictureSrc = profilePicturePreview.getAttribute('data-profile-picture') || profilePicturePreview.src;
+      
+      // Only save if it's not the default avatar and is a valid image data URL
+      if (pictureSrc && 
+          !pictureSrc.includes('default-avatar.svg') && 
+          (pictureSrc.startsWith('data:image/') || pictureSrc.startsWith('blob:'))) {
+        profilePicture = pictureSrc;
+      } else if (pictureSrc && pictureSrc.includes('default-avatar.svg')) {
+        // If user wants to reset to default, clear the profile picture
+        profilePicture = null;
+      }
+    }
+
+    // Update profile using API
+    try {
+      if (typeof API !== 'undefined' && API.updateProfile) {
+        const profileData = {
+          name: displayName
+        };
+        if (profilePicture !== undefined) {
+          profileData.profilePicture = profilePicture;
+        }
+        
+        const updatedUser = await API.updateProfile(profileData);
+        
+        // Update local user data
+        if (typeof Auth !== 'undefined' && Auth.login) {
+          Auth.login(updatedUser);
+        }
+        if (typeof App !== 'undefined') {
+          App.currentUser = updatedUser;
+        }
+        
+        // Update navigation to show new profile picture
+        this.updateNavigationProfilePicture(updatedUser.profilePicture);
+        
+        // Reload navigation UI to show updated profile picture
+        if (typeof Navigation !== 'undefined' && Navigation.updateAuthUI) {
+          Navigation.updateAuthUI(true);
+        }
+        if (typeof Auth !== 'undefined' && Auth.updateNavigationVisibility) {
+          Auth.updateNavigationVisibility(Auth.getCurrentPage(), true);
+        }
+
+        App.showSuccessMessage('Profile updated successfully!');
+      } else {
+        // Fallback to localStorage
     const currentUser = Auth.getCurrentUser() || App.currentUser;
     if (currentUser) {
       currentUser.name = displayName;
-      
-      // Get profile picture if it was uploaded
-      const profilePicturePreview = document.getElementById('profilePicturePreview');
-      if (profilePicturePreview) {
-        // Get from data attribute first, then fall back to src
-        const pictureSrc = profilePicturePreview.getAttribute('data-profile-picture') || profilePicturePreview.src;
-        
-        // Only save if it's not the default avatar and is a valid image data URL
-        if (pictureSrc && 
-            !pictureSrc.includes('default-avatar.svg') && 
-            (pictureSrc.startsWith('data:image/') || pictureSrc.startsWith('blob:'))) {
-          currentUser.profilePicture = pictureSrc;
-        } else if (pictureSrc && pictureSrc.includes('default-avatar.svg')) {
-          // If user wants to reset to default, clear the profile picture
-          currentUser.profilePicture = null;
-        }
+          if (profilePicture !== undefined) {
+            currentUser.profilePicture = profilePicture;
       }
 
-      // Save to storage
-      const users = App.getFromStorage(App.STORAGE_KEYS.USERS) || [];
-      const userIndex = users.findIndex(u => u.id === currentUser.id);
-      if (userIndex !== -1) {
-        users[userIndex].name = displayName;
-        if (currentUser.profilePicture) {
-          users[userIndex].profilePicture = currentUser.profilePicture;
-        } else {
-          // Remove profile picture if it was cleared
-          delete users[userIndex].profilePicture;
-        }
-        App.setToStorage(App.STORAGE_KEYS.USERS, users);
-      }
-
-      // Update current user
       App.setToStorage(App.STORAGE_KEYS.CURRENT_USER, currentUser);
       if (Auth.login) {
         Auth.login(currentUser);
       }
-      
-      // Update navigation to show new profile picture
-      this.updateNavigationProfilePicture(currentUser.profilePicture);
-      
-      // Reload navigation UI to show updated profile picture
-      if (typeof Navigation !== 'undefined' && Navigation.updateAuthUI) {
-        Navigation.updateAuthUI(true);
-      }
-      if (typeof Auth !== 'undefined' && Auth.updateNavigationVisibility) {
-        Auth.updateNavigationVisibility(Auth.getCurrentPage(), true);
-      }
 
+          this.updateNavigationProfilePicture(currentUser.profilePicture);
       App.showSuccessMessage('Profile updated successfully!');
-    } else {
-      App.showError('You must be logged in to update your profile');
+        } else {
+          App.showError('You must be logged in to update your profile');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      App.showError(error.message || 'Failed to update profile. Please try again.');
     }
   },
 
-  // Handle budget form submission
-  handleBudgetSubmit(form) {
+  // Handle budget form submission (using API)
+  async handleBudgetSubmit(form) {
     const formData = new FormData(form);
     const monthlyBudget = parseFloat(formData.get('monthlyBudget')) || 0;
 
@@ -332,8 +402,21 @@ const Settings = {
       return;
     }
 
+    try {
+      if (typeof API !== 'undefined' && API.updateBudget) {
+        await API.updateBudget({ monthlyBudget });
+        App.showSuccessMessage('Budget settings saved successfully!');
+        this.updateBudgetVisual();
+        
+        // Update dashboard if on dashboard page
+        if (typeof Dashboard !== 'undefined' && Dashboard.updateBudgetProgress) {
+          Dashboard.updateBudgetProgress();
+          Dashboard.updateMetrics();
+      }
+      } else {
+        // Fallback to localStorage
     const budgetSettings = {
-      monthlyBudget
+          monthlyBudget
     };
 
     if (this.saveBudgetSettings(budgetSettings)) {
@@ -347,18 +430,49 @@ const Settings = {
       }
     } else {
       App.showError('Failed to save budget settings');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating budget:', error);
+      App.showError(error.message || 'Failed to save budget settings');
     }
   },
 
-  // Handle preferences form submission
-  handlePreferencesSubmit(form) {
+  // Handle preferences form submission (using API)
+  async handlePreferencesSubmit(form) {
     const formData = new FormData(form);
     const settings = {
       theme: formData.get('theme'),
       currency: formData.get('currency')
     };
 
-    // Merge with existing settings
+    try {
+      if (typeof API !== 'undefined' && API.updateSettings) {
+        await API.updateSettings(settings);
+        App.showSuccessMessage('Preferences saved successfully!');
+        
+        // Apply theme if changed
+        if (settings.theme) {
+          this.applyTheme(settings.theme);
+          
+          // Update charts if on reports page
+          if (typeof Charts !== 'undefined' && Charts.updateCharts) {
+            const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
+            Charts.updateCharts(expenses);
+          }
+        }
+        
+        // Update currency symbol across pages
+        this.updateCurrencySymbol();
+        
+        // Reload dashboard if on dashboard page
+        if (typeof Dashboard !== 'undefined' && Dashboard.updateCurrencySymbol) {
+          Dashboard.updateCurrencySymbol();
+          Dashboard.updateMetrics();
+          Dashboard.updateBudgetProgress();
+        }
+      } else {
+        // Fallback to localStorage
     const existingSettings = App.getFromStorage(App.STORAGE_KEYS.SETTINGS) || App.getDefaultSettings();
     const updatedSettings = { ...existingSettings, ...settings };
 
@@ -368,12 +482,12 @@ const Settings = {
       // Apply theme if changed
       if (settings.theme) {
         this.applyTheme(settings.theme);
-        
-        // Update charts if on reports page
-        if (typeof Charts !== 'undefined' && Charts.updateCharts) {
-          const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
-          Charts.updateCharts(expenses);
-        }
+            
+            // Update charts if on reports page
+            if (typeof Charts !== 'undefined' && Charts.updateCharts) {
+              const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
+              Charts.updateCharts(expenses);
+            }
       }
       
       // Update currency symbol across pages
@@ -387,6 +501,11 @@ const Settings = {
       }
     } else {
       App.showError('Failed to save preferences');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating preferences:', error);
+      App.showError(error.message || 'Failed to save preferences');
     }
   },
 
@@ -492,14 +611,14 @@ const Settings = {
 };
 
 // Initialize settings when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Wait for App to initialize first
   if (typeof App !== 'undefined' && App.init) {
     // App.init() is called separately, so wait a bit for data to load
-    setTimeout(() => {
-      Settings.init();
+    setTimeout(async () => {
+      await Settings.init();
     }, 200);
   } else {
-    Settings.init();
+    await Settings.init();
   }
 });
