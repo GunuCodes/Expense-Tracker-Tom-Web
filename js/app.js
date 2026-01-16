@@ -13,81 +13,70 @@ const App = {
   init() {
     console.log('Expense Tracker App initialized');
     this.checkAuthState();
-    this.initializeViews();
     this.setupEventListeners();
     this.loadData();
-    this.initializeCharts();
+    
+    // Initialize page-specific features
+    this.initializePageFeatures();
   },
 
-  // Initialize view states
-  initializeViews() {
-    // Get all section views
-    const sections = document.querySelectorAll('.section-view');
+  // Initialize page-specific features
+  initializePageFeatures() {
+    const currentPage = this.getCurrentPage();
     
-    // Find which section is currently active (if any)
-    const activeSection = document.querySelector('.section-view--active');
-    
-    // Hide all sections except the active one
-    sections.forEach(section => {
-      if (section !== activeSection) {
-        section.style.display = 'none';
-        section.classList.remove('section-view--active');
-      } else {
-        // Ensure active section is visible
-        section.style.display = 'block';
-        this.currentView = section.id || 'expenses';
+    if (currentPage === 'dashboard') {
+      // Initialize dashboard features
+      this.updateExpenseList();
+    } else if (currentPage === 'reports') {
+      // Charts will be initialized after loadData completes
+    } else if (currentPage === 'login') {
+      // Setup login form
+      this.setupLoginForm();
+    } else if (currentPage === 'signup') {
+      // Setup signup form
+      this.setupSignupForm();
       }
-    });
+  },
     
-    // If no active section, show expenses by default
-    if (!activeSection) {
-      const expensesSection = document.querySelector('#expenses');
-      if (expensesSection) {
-        expensesSection.style.display = 'block';
-        expensesSection.classList.add('section-view--active');
-        this.currentView = 'expenses';
-      }
+  // Get current page name
+  getCurrentPage() {
+    const path = window.location.pathname;
+    const filename = path.split('/').pop() || 'index.html';
+    
+    if (filename === 'index.html' || filename === '' || filename.endsWith('/')) {
+      return 'index';
+    } else if (filename === 'dashboard.html') {
+      return 'dashboard';
+    } else if (filename === 'reports.html') {
+      return 'reports';
+    } else if (filename === 'login.html') {
+      return 'login';
+    } else if (filename === 'signup.html') {
+      return 'signup';
     }
     
-    // Update active nav link
-    document.querySelectorAll('.nav__link').forEach(link => {
-      link.classList.remove('nav__link--active');
-    });
-    
-    const expensesLink = document.querySelector('[href="#expenses"]');
-    if (expensesLink && this.currentView === 'expenses') {
-      expensesLink.classList.add('nav__link--active');
-    } else {
-      const reportsLink = document.querySelector('[href="#reports"]');
-      if (reportsLink && this.currentView === 'reports') {
-        reportsLink.classList.add('nav__link--active');
-      }
-    }
+    return 'index';
   },
 
   // Setup event listeners using event delegation
   setupEventListeners() {
-    // Mobile menu toggle
-    const menuToggle = document.querySelector('.header__menu-toggle');
-    if (menuToggle) {
-      menuToggle.addEventListener('click', this.toggleMobileMenu.bind(this));
-    }
-
-    // Navigation using event delegation
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.nav__link')) {
-        e.preventDefault();
-        this.handleNavigation(e.target.getAttribute('href'));
-      }
-    });
-
-    // Form submission
+    // Form submission (dashboard page)
     const expenseForm = document.getElementById('expenseForm');
     if (expenseForm) {
       expenseForm.addEventListener('submit', this.handleFormSubmit.bind(this));
     }
 
-    // Filter controls
+    // Clear form button
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) {
+      clearFormBtn.addEventListener('click', () => {
+        if (expenseForm) {
+          expenseForm.reset();
+        }
+      });
+    }
+
+    // Filter controls (dashboard page)
     const categoryFilter = document.getElementById('categoryFilter');
     const dateFilter = document.getElementById('dateFilter');
     
@@ -99,90 +88,24 @@ const App = {
       dateFilter.addEventListener('change', this.filterExpenses.bind(this));
     }
 
-    // Modal buttons (only if user is not logged in)
-    // If logged in, buttons are created by updateAuthUI()
-    if (!this.currentUser) {
-      const loginBtn = document.getElementById('loginBtn');
-      const signupBtn = document.getElementById('signupBtn');
+    // Delete modal handlers (dashboard page)
+    this.setupDeleteModalListeners();
+  },
 
-      if (loginBtn) {
-        loginBtn.addEventListener('click', () => this.openModal('login'));
-      }
-
-      if (signupBtn) {
-        signupBtn.addEventListener('click', () => this.openModal('signup'));
-      }
-    }
-    
-    // Modal close buttons and switchers
-    const closeLoginBtn = document.getElementById('closeLoginBtn');
-    const closeSignupBtn = document.getElementById('closeSignupBtn');
-    const switchToSignup = document.getElementById('switchToSignup');
-    const switchToLogin = document.getElementById('switchToLogin');
-
-    if (closeLoginBtn) {
-      closeLoginBtn.addEventListener('click', () => this.closeModal('login'));
-    }
-
-    if (closeSignupBtn) {
-      closeSignupBtn.addEventListener('click', () => this.closeModal('signup'));
-    }
-
-    if (switchToSignup) {
-      switchToSignup.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.closeModal('login');
-        setTimeout(() => this.openModal('signup'), 200);
-      });
-    }
-
-    if (switchToLogin) {
-      switchToLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.closeModal('signup');
-        setTimeout(() => this.openModal('login'), 200);
-      });
-    }
-
-    // Close modal on backdrop click
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal__backdrop')) {
-        const modal = e.target.closest('.modal');
-        if (modal) {
-          const modalId = modal.id === 'loginModal' ? 'login' : 'signup';
-          this.closeModal(modalId);
-        }
-      }
-    });
-
-    // Close modal on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        const loginModal = document.getElementById('loginModal');
-        const signupModal = document.getElementById('signupModal');
-        const deleteModal = document.getElementById('deleteModal');
-        
-        if (deleteModal && deleteModal.classList.contains('modal--open')) {
-          this.closeDeleteModal();
-        } else if (loginModal && loginModal.classList.contains('modal--open')) {
-          this.closeModal('login');
-        } else if (signupModal && signupModal.classList.contains('modal--open')) {
-          this.closeModal('signup');
-        }
-      }
-    });
-
-    // Handle form submissions (frontend only - prevent default)
+  // Setup login form (login page)
+  setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.handleLogin(e.target);
       });
     }
+  },
 
+  // Setup signup form (signup page)
+  setupSignupForm() {
+    const signupForm = document.getElementById('signupForm');
     if (signupForm) {
       signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -191,89 +114,6 @@ const App = {
     }
   },
 
-  // Toggle mobile menu
-  toggleMobileMenu() {
-    const nav = document.querySelector('.header__nav');
-    const menuToggle = document.querySelector('.header__menu-toggle');
-    
-    if (nav && menuToggle) {
-      nav.classList.toggle('nav--open');
-      menuToggle.classList.toggle('menu-toggle--active');
-    }
-  },
-
-  // Handle navigation between views
-  handleNavigation(target) {
-    // Don't navigate if already on the target view
-    const targetView = target.replace('#', '');
-    if (this.currentView === targetView) {
-      return;
-    }
-
-    // Remove active class from all nav links
-    document.querySelectorAll('.nav__link').forEach(link => {
-      link.classList.remove('nav__link--active');
-    });
-
-    // Add active class to clicked link
-    const activeLink = document.querySelector(`[href="${target}"]`);
-    if (activeLink) {
-      activeLink.classList.add('nav__link--active');
-    }
-
-    // Get current and target sections
-    const currentSection = document.querySelector(`#${this.currentView}`);
-    const targetSection = document.querySelector(target);
-    
-    if (!targetSection) return;
-
-    // Hide current section with fade out
-    if (currentSection && currentSection !== targetSection) {
-      currentSection.classList.remove('section-view--active');
-      currentSection.classList.add('section-view--hiding');
-      
-      setTimeout(() => {
-        currentSection.style.display = 'none';
-        currentSection.classList.remove('section-view--hiding');
-        
-        // Show target section with fade in
-        targetSection.style.display = 'block';
-        setTimeout(() => {
-          targetSection.classList.add('section-view--active');
-        }, 10);
-        
-        this.currentView = targetView;
-        
-        // Update charts if navigating to reports
-        if (this.currentView === 'reports') {
-          setTimeout(() => {
-            this.updateCharts();
-          }, 200);
-        }
-      }, 200);
-    } else {
-      // If no current section or same section, just show target
-      targetSection.style.display = 'block';
-      setTimeout(() => {
-        targetSection.classList.add('section-view--active');
-      }, 10);
-      this.currentView = targetView;
-      
-      if (this.currentView === 'reports') {
-        setTimeout(() => {
-          this.updateCharts();
-        }, 200);
-      }
-    }
-
-    // Close mobile menu if open
-    const nav = document.querySelector('.header__nav');
-    const menuToggle = document.querySelector('.header__menu-toggle');
-    if (nav && menuToggle && nav.classList.contains('nav--open')) {
-      nav.classList.remove('nav--open');
-      menuToggle.classList.remove('menu-toggle--active');
-    }
-  },
 
   // Handle form submission
   handleFormSubmit(e) {
@@ -849,10 +689,24 @@ const App = {
         expenses: this.expenses.length,
         categories: this.categories.length
       });
+      
+      // Initialize charts if on reports page
+      if (this.getCurrentPage() === 'reports') {
+        setTimeout(() => {
+          this.initializeCharts();
+        }, 100);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       this.showError('Failed to load saved data. Using demo data.');
       this.initializeWithDemoData();
+      
+      // Initialize charts if on reports page
+      if (this.getCurrentPage() === 'reports') {
+        setTimeout(() => {
+          this.initializeCharts();
+        }, 100);
+      }
     }
   },
 
@@ -1317,55 +1171,6 @@ const App = {
     }
   },
 
-  // ========================================
-  // MODAL MANAGEMENT
-  // ========================================
-
-  // Open modal
-  openModal(type) {
-    const modalId = type === 'login' ? 'loginModal' : 'signupModal';
-    const modal = document.getElementById(modalId);
-    
-    if (modal) {
-      modal.classList.add('modal--open');
-      document.body.classList.add('body--modal-open');
-      
-      // Focus on first input
-      const firstInput = modal.querySelector('input');
-      if (firstInput) {
-        setTimeout(() => firstInput.focus(), 100);
-      }
-    }
-  },
-
-  // Close modal
-  closeModal(type) {
-    const modalId = type === 'login' ? 'loginModal' : 'signupModal';
-    const modal = document.getElementById(modalId);
-    
-    if (modal) {
-      modal.classList.remove('modal--open');
-      
-      // Clear any messages in the modal
-      const messageEl = modal.querySelector('.modal__message');
-      if (messageEl) {
-        messageEl.classList.remove('modal__message--show', 'modal__message--success', 'modal__message--error');
-        messageEl.textContent = '';
-      }
-      
-      // Check if any other modal is open
-      const loginModal = document.getElementById('loginModal');
-      const signupModal = document.getElementById('signupModal');
-      const deleteModal = document.getElementById('deleteModal');
-      const anyModalOpen = (loginModal && loginModal.classList.contains('modal--open')) ||
-                          (signupModal && signupModal.classList.contains('modal--open')) ||
-                          (deleteModal && deleteModal.classList.contains('modal--open'));
-      
-      if (!anyModalOpen) {
-        document.body.classList.remove('body--modal-open');
-      }
-    }
-  },
 
   // ========================================
   // AUTHENTICATION
@@ -1380,24 +1185,20 @@ const App = {
     }
   },
 
-  // Show message in modal
-  showModalMessage(modalType, message, type) {
-    const modalId = modalType === 'login' ? 'loginModal' : 'signupModal';
-    const modal = document.getElementById(modalId);
-    const messageEl = modal ? modal.querySelector('.modal__message') : null;
+  // Show message in auth page
+  showAuthMessage(pageType, message, type) {
+    const messageId = pageType === 'login' ? 'loginMessage' : 'signupMessage';
+    const messageEl = document.getElementById(messageId);
     
     if (messageEl) {
       messageEl.textContent = message;
-      messageEl.className = `modal__message modal__message--show modal__message--${type}`;
+      messageEl.className = `auth-card__message auth-card__message--${type}`;
       
       // Auto-hide success messages after 3 seconds
       if (type === 'success') {
         setTimeout(() => {
-          messageEl.classList.remove('modal__message--show');
-          setTimeout(() => {
+          messageEl.className = 'auth-card__message';
             messageEl.textContent = '';
-            messageEl.className = 'modal__message';
-          }, 300);
         }, 3000);
       }
     }
@@ -1413,31 +1214,31 @@ const App = {
     const terms = formData.get('terms');
 
     // Clear previous messages
-    this.showModalMessage('signup', '', 'success');
+    this.showAuthMessage('signup', '', 'success');
 
     // Validation
     if (!name || name.length < 2) {
-      this.showModalMessage('signup', 'Please enter your full name (at least 2 characters)', 'error');
+      this.showAuthMessage('signup', 'Please enter your full name (at least 2 characters)', 'error');
       return;
     }
 
     if (!email || !this.validateEmail(email)) {
-      this.showModalMessage('signup', 'Please enter a valid email address', 'error');
+      this.showAuthMessage('signup', 'Please enter a valid email address', 'error');
       return;
     }
 
     if (!password || password.length < 6) {
-      this.showModalMessage('signup', 'Password must be at least 6 characters long', 'error');
+      this.showAuthMessage('signup', 'Password must be at least 6 characters long', 'error');
       return;
     }
 
     if (password !== confirmPassword) {
-      this.showModalMessage('signup', 'Passwords do not match', 'error');
+      this.showAuthMessage('signup', 'Passwords do not match', 'error');
       return;
     }
 
     if (!terms) {
-      this.showModalMessage('signup', 'Please agree to the Terms of Service and Privacy Policy', 'error');
+      this.showAuthMessage('signup', 'Please agree to the Terms of Service and Privacy Policy', 'error');
       return;
     }
 
@@ -1446,7 +1247,7 @@ const App = {
     const existingUser = users.find(user => user.email === email);
     
     if (existingUser) {
-      this.showModalMessage('signup', 'An account with this email already exists. Please login instead.', 'error');
+      this.showAuthMessage('signup', 'An account with this email already exists. Please login instead.', 'error');
       return;
     }
 
@@ -1470,13 +1271,11 @@ const App = {
     };
     this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
 
-    this.showModalMessage('signup', `Welcome, ${name}! Your account has been created successfully.`, 'success');
+    this.showAuthMessage('signup', `Welcome, ${name}! Your account has been created successfully. Redirecting...`, 'success');
     
-    // Close modal and update UI after short delay
+    // Redirect to dashboard after short delay
     setTimeout(() => {
-      this.closeModal('signup');
-      this.updateAuthUI();
-      form.reset();
+      window.location.href = 'dashboard.html';
     }, 1500);
   },
 
@@ -1487,17 +1286,22 @@ const App = {
     const password = formData.get('password');
     const remember = formData.get('remember');
 
+    const messageEl = document.getElementById('loginMessage');
+
     // Clear previous messages
-    this.showModalMessage('login', '', 'success');
+    if (messageEl) {
+      messageEl.textContent = '';
+      messageEl.className = 'auth-card__message';
+    }
 
     // Validation
     if (!email || !this.validateEmail(email)) {
-      this.showModalMessage('login', 'Please enter a valid email address', 'error');
+      this.showAuthMessage('login', 'Please enter a valid email address', 'error');
       return;
     }
 
     if (!password) {
-      this.showModalMessage('login', 'Please enter your password', 'error');
+      this.showAuthMessage('login', 'Please enter your password', 'error');
       return;
     }
 
@@ -1506,7 +1310,7 @@ const App = {
     const user = users.find(u => u.email === email && u.password === password);
 
     if (!user) {
-      this.showModalMessage('login', 'Invalid email or password. Please try again.', 'error');
+      this.showAuthMessage('login', 'Invalid email or password. Please try again.', 'error');
       return;
     }
 
@@ -1518,13 +1322,11 @@ const App = {
     };
     this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
 
-    this.showModalMessage('login', `Welcome back, ${user.name}!`, 'success');
+    this.showAuthMessage('login', `Welcome back, ${user.name}! Redirecting...`, 'success');
     
-    // Close modal and update UI after short delay
+    // Redirect to dashboard after short delay
     setTimeout(() => {
-      this.closeModal('login');
-      this.updateAuthUI();
-      form.reset();
+      window.location.href = 'dashboard.html';
     }, 1500);
   },
 
@@ -1542,42 +1344,10 @@ const App = {
     return emailRegex.test(email);
   },
 
-  // Update authentication UI
+  // Update authentication UI (handled by navigation.js)
   updateAuthUI() {
-    const authSection = document.querySelector('.header__auth');
-    if (!authSection) return;
-
-    if (this.currentUser) {
-      // Show logged-in state
-      authSection.innerHTML = `
-        <div class="header__user-info">
-          <span class="user__name">${this.currentUser.name}</span>
-        </div>
-        <button class="btn-auth btn-auth--logout" id="logoutBtn">Logout</button>
-      `;
-
-      // Add logout event listener
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => this.handleLogout());
-      }
-    } else {
-      // Show login/signup buttons
-      authSection.innerHTML = `
-        <button class="btn-auth btn-auth--login" id="loginBtn">Login</button>
-        <button class="btn-auth btn-auth--signup" id="signupBtn">Sign Up</button>
-      `;
-
-      // Re-attach event listeners
-      const loginBtn = document.getElementById('loginBtn');
-      const signupBtn = document.getElementById('signupBtn');
-      
-      if (loginBtn) {
-        loginBtn.addEventListener('click', () => this.openModal('login'));
-      }
-      if (signupBtn) {
-        signupBtn.addEventListener('click', () => this.openModal('signup'));
-      }
+    if (typeof Navigation !== 'undefined' && Navigation.updateAuthUI) {
+      Navigation.updateAuthUI(true);
     }
   }
 };
