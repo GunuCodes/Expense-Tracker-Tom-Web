@@ -153,8 +153,11 @@ const App = {
       if (e.key === 'Escape') {
         const loginModal = document.getElementById('loginModal');
         const signupModal = document.getElementById('signupModal');
+        const deleteModal = document.getElementById('deleteModal');
         
-        if (loginModal && loginModal.classList.contains('modal--open')) {
+        if (deleteModal && deleteModal.classList.contains('modal--open')) {
+          this.closeDeleteModal();
+        } else if (loginModal && loginModal.classList.contains('modal--open')) {
           this.closeModal('login');
         } else if (signupModal && signupModal.classList.contains('modal--open')) {
           this.closeModal('signup');
@@ -611,17 +614,153 @@ const App = {
     this.updateExpenseList();
   },
 
-  // Handle delete expense
+  // Handle delete expense - show custom modal
   handleDeleteExpense(expenseId) {
     const expense = this.getExpense(expenseId);
     if (!expense) return;
 
-    // Simple confirmation dialog
-    const confirmed = confirm(`Are you sure you want to delete "${expense.description}"?`);
-    
-    if (confirmed) {
-      this.deleteExpense(expenseId);
+    this.showDeleteModal(expense);
+  },
+
+  // Show delete confirmation modal
+  showDeleteModal(expense) {
+    const modal = document.getElementById('deleteModal');
+    const modalBody = document.getElementById('deleteModalBody');
+    if (!modal || !modalBody) return;
+
+    // Populate expense details
+    const categoryNames = {
+      food: 'Food & Dining',
+      transport: 'Transportation',
+      entertainment: 'Entertainment',
+      utilities: 'Utilities',
+      shopping: 'Shopping',
+      healthcare: 'Healthcare',
+      education: 'Education',
+      other: 'Other'
+    };
+
+    const date = new Date(expense.date);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    modalBody.innerHTML = `
+      <div class="delete-expense-details">
+        <div class="delete-expense-item">
+          <span class="delete-expense-label">Description:</span>
+          <span class="delete-expense-value">${expense.description}</span>
+        </div>
+        <div class="delete-expense-item">
+          <span class="delete-expense-label">Amount:</span>
+          <span class="delete-expense-value delete-expense-value--amount">$${expense.amount.toFixed(2)}</span>
+        </div>
+        <div class="delete-expense-item">
+          <span class="delete-expense-label">Category:</span>
+          <span class="delete-expense-value">${categoryNames[expense.category] || 'Other'}</span>
+        </div>
+        <div class="delete-expense-item">
+          <span class="delete-expense-label">Date:</span>
+          <span class="delete-expense-value">${formattedDate}</span>
+        </div>
+      </div>
+    `;
+
+    // Store expense ID for deletion
+    modal.setAttribute('data-expense-id', expense.id);
+
+    // Show modal
+    modal.classList.add('modal--open');
+    document.body.classList.add('body--modal-open');
+
+    // Focus on cancel button for accessibility
+    const cancelBtn = document.getElementById('cancelDeleteBtn');
+    if (cancelBtn) {
+      setTimeout(() => cancelBtn.focus(), 100);
     }
+
+    // Setup event listeners (only once)
+    this.setupDeleteModalListeners();
+  },
+
+  // Setup delete modal event listeners
+  setupDeleteModalListeners() {
+    const modal = document.getElementById('deleteModal');
+    if (!modal) return;
+
+    // Check if listeners are already attached
+    if (modal.hasAttribute('data-listeners-attached')) return;
+    modal.setAttribute('data-listeners-attached', 'true');
+
+    const cancelBtn = document.getElementById('cancelDeleteBtn');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const backdrop = modal.querySelector('.modal__backdrop');
+
+    // Cancel button
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => this.closeDeleteModal());
+    }
+
+    // Confirm delete button
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        const expenseId = parseInt(modal.getAttribute('data-expense-id'));
+        if (expenseId) {
+          this.confirmDelete(expenseId);
+        }
+      });
+    }
+
+    // Backdrop click
+    if (backdrop) {
+      backdrop.addEventListener('click', () => this.closeDeleteModal());
+    }
+
+    // ESC key handler - check existing global handler handles it
+    // If not, this will be handled by the global ESC handler in setupEventListeners
+  },
+
+  // Close delete modal
+  closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (!modal) return;
+
+    modal.classList.remove('modal--open');
+    
+    // Check if any other modal is open
+    const loginModal = document.getElementById('loginModal');
+    const signupModal = document.getElementById('signupModal');
+    const anyModalOpen = (loginModal && loginModal.classList.contains('modal--open')) ||
+                        (signupModal && signupModal.classList.contains('modal--open'));
+    
+    if (!anyModalOpen) {
+      document.body.classList.remove('body--modal-open');
+    }
+
+    // Remove expense ID
+    modal.removeAttribute('data-expense-id');
+  },
+
+  // Confirm and execute deletion
+  confirmDelete(expenseId) {
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (!confirmBtn) return;
+
+    // Add loading state
+    confirmBtn.classList.add('btn--loading');
+    confirmBtn.disabled = true;
+
+    // Small delay for visual feedback, then delete
+    setTimeout(() => {
+      this.deleteExpense(expenseId);
+      this.closeDeleteModal();
+      
+      // Reset button state
+      confirmBtn.classList.remove('btn--loading');
+      confirmBtn.disabled = false;
+    }, 300);
   },
 
   // Show success message

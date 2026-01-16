@@ -764,6 +764,23 @@ ol {
   background-color: var(--color-gray-200);
 }
 
+.btn--danger {
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border-color: var(--color-error);
+}
+
+.btn--danger:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgb(239 68 68 / 0.3);
+}
+
+.btn--danger:active {
+  transform: translateY(0);
+}
+
 .btn--full {
   width: 100%;
 }
@@ -938,6 +955,127 @@ ol {
 .modal__link:hover {
   color: var(--color-primary-dark);
   text-decoration: underline;
+}
+
+/* Delete Modal Specific Styles */
+.modal--delete .modal__content {
+  max-width: 480px;
+}
+
+.modal__content--delete {
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+.modal__header--delete {
+  text-align: center;
+  padding-bottom: var(--spacing-6);
+}
+
+.modal__icon-wrapper {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fef2f2;
+  border-radius: 50%;
+  border: 2px solid #fee2e2;
+}
+
+.modal__icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.modal__title--delete {
+  margin-bottom: var(--spacing-2);
+  color: var(--color-gray-900);
+}
+
+.modal__body--delete {
+  padding: var(--spacing-6);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-6);
+}
+
+.delete-expense-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.delete-expense-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-gray-200);
+}
+
+.delete-expense-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  font-size: var(--font-size-sm);
+  min-width: 80px;
+}
+
+.delete-expense-value {
+  color: var(--color-gray-900);
+  font-weight: var(--font-weight-medium);
+  flex: 1;
+}
+
+.delete-expense-value--amount {
+  color: var(--color-error);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.modal__footer--delete {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+  padding: var(--spacing-6);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.modal__footer--delete .btn {
+  min-width: 120px;
+}
+
+.modal__footer--delete .btn--danger {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* Loading state for delete button */
+.btn--danger.btn--loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn--danger.btn--loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--color-white);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Blur effect for body when modal is open */
@@ -1170,6 +1308,10 @@ ol {
     max-width: 480px;
   }
   
+  .modal--delete .modal__content {
+    max-width: 520px;
+  }
+  
   .reports__charts {
     grid-template-columns: 1fr 1fr;
   }
@@ -1216,6 +1358,20 @@ ol {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-2);
+  }
+  
+  .modal--delete .modal__content {
+    width: 95%;
+    max-width: 480px;
+  }
+  
+  .modal__footer--delete {
+    flex-direction: column;
+  }
+  
+  .modal__footer--delete .btn {
+    width: 100%;
+    max-width: none;
   }
   
   .expenses__content {
