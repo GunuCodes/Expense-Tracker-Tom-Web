@@ -78,8 +78,12 @@ const Navigation = {
 
   // Setup authentication UI
   setupAuthUI() {
-    // Check if user is logged in
-    if (typeof App !== 'undefined' && App.currentUser) {
+    // Use Auth manager if available
+    if (typeof Auth !== 'undefined' && Auth.isUserAuthenticated) {
+      const isAuth = Auth.isUserAuthenticated();
+      this.updateAuthUI(isAuth);
+    } else if (typeof App !== 'undefined' && App.currentUser) {
+      // Fallback to App.currentUser
       this.updateAuthUI(true);
     } else {
       this.updateAuthUI(false);
@@ -88,30 +92,51 @@ const Navigation = {
 
   // Update authentication UI based on login state
   updateAuthUI(isLoggedIn) {
+    // Auth manager handles UI updates, so we don't need to do anything here
+    // This is kept for backward compatibility
     const authSection = document.getElementById('authSection');
     if (!authSection) return;
 
-    if (isLoggedIn && typeof App !== 'undefined' && App.currentUser) {
+    // Get current user from Auth manager or App
+    let currentUser = null;
+    if (typeof Auth !== 'undefined' && Auth.getCurrentUser) {
+      currentUser = Auth.getCurrentUser();
+    } else if (typeof App !== 'undefined' && App.currentUser) {
+      currentUser = App.currentUser;
+    }
+
+    if (isLoggedIn && currentUser) {
       authSection.innerHTML = `
         <div class="header__user-info">
-          <span class="user__name">${App.currentUser.name}</span>
+          <img src="assets/images/avatars/default-avatar.svg" alt="User Avatar" class="avatar avatar--small">
+          <span class="user__name">${currentUser.name}</span>
         </div>
-        <button class="btn-auth btn-auth--logout" id="logoutBtn">Logout</button>
+        <button class="btn-auth btn-auth--logout" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
       `;
 
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-          if (typeof App !== 'undefined' && App.handleLogout) {
+          if (typeof Auth !== 'undefined' && Auth.handleLogout) {
+            Auth.handleLogout();
+          } else if (typeof App !== 'undefined' && App.handleLogout) {
             App.handleLogout();
-            window.location.href = 'index.html';
           }
         });
       }
     } else {
       authSection.innerHTML = `
-        <a href="login.html" class="btn-auth btn-auth--login">Login</a>
-        <a href="signup.html" class="btn-auth btn-auth--signup">Sign Up</a>
+        <a href="login.html" class="btn-auth btn-auth--login">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Login</span>
+        </a>
+        <a href="signup.html" class="btn-auth btn-auth--signup">
+          <i class="fas fa-user-plus"></i>
+          <span>Sign Up</span>
+        </a>
       `;
     }
   }

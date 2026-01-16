@@ -1,0 +1,360 @@
+/**
+ * Authentication Manager
+ * Handles authentication state, route protection, and session management
+ */
+
+const Auth = {
+  // Storage keys
+  STORAGE_KEYS: {
+    CURRENT_USER: 'expenseTrackerCurrentUser',
+    SESSION_TOKEN: 'expenseTrackerSessionToken'
+  },
+
+  // Current user state
+  currentUser: null,
+  isAuthenticated: false,
+
+  // Initialize authentication
+  init() {
+    this.checkAuthState();
+    this.setupRouteProtection();
+  },
+
+  // Check authentication state from storage
+  checkAuthState() {
+    try {
+      const savedUser = localStorage.getItem(this.STORAGE_KEYS.CURRENT_USER);
+      const sessionToken = localStorage.getItem(this.STORAGE_KEYS.SESSION_TOKEN);
+
+      if (savedUser && sessionToken) {
+        this.currentUser = JSON.parse(savedUser);
+        this.isAuthenticated = true;
+        
+        // Validate session token (simple check - in production, validate with server)
+        if (this.validateSession(sessionToken)) {
+          return true;
+        } else {
+          // Invalid session, clear it
+          this.logout();
+          return false;
+        }
+      } else {
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking auth state:', error);
+      this.logout();
+      return false;
+    }
+  },
+
+  // Validate session token
+  validateSession(token) {
+    // Simple validation - check if token exists and is not expired
+    // In production, this would validate with a server
+    if (!token) return false;
+    
+    try {
+      const tokenData = JSON.parse(atob(token.split('.')[1] || '{}'));
+      if (tokenData.exp && tokenData.exp < Date.now()) {
+        return false; // Token expired
+      }
+      return true;
+    } catch {
+      // If token is not JWT format, just check if it exists
+      return token.length > 0;
+    }
+  },
+
+  // Setup route protection based on current page
+  setupRouteProtection() {
+    const currentPage = this.getCurrentPage();
+    const requiresAuth = this.requiresAuthentication(currentPage);
+    const requiresGuest = this.requiresGuest(currentPage);
+
+    // Check if user is authenticated
+    const isAuth = this.checkAuthState();
+
+    // Handle route protection
+    if (requiresAuth && !isAuth) {
+      // Protected page but user not logged in - redirect to landing
+      this.redirectToLanding();
+      return;
+    }
+
+    if (requiresGuest && isAuth) {
+      // Landing page but user is logged in - redirect to dashboard
+      this.redirectToDashboard();
+      return;
+    }
+
+    // Login/Signup pages: if already logged in, redirect to dashboard
+    if ((currentPage === 'login' || currentPage === 'signup') && isAuth) {
+      this.redirectToDashboard();
+      return;
+    }
+
+    // Update navigation visibility based on page type
+    this.updateNavigationVisibility(currentPage, isAuth);
+  },
+
+  // Get current page name
+  getCurrentPage() {
+    const path = window.location.pathname;
+    const filename = path.split('/').pop() || 'index.html';
+    
+    if (filename === 'index.html' || filename === '' || filename.endsWith('/')) {
+      return 'index';
+    } else if (filename === 'dashboard.html') {
+      return 'dashboard';
+    } else if (filename === 'reports.html') {
+      return 'reports';
+    } else if (filename === 'login.html') {
+      return 'login';
+    } else if (filename === 'signup.html') {
+      return 'signup';
+    }
+    
+    return 'index';
+  },
+
+  // Check if page requires authentication
+  requiresAuthentication(page) {
+    const protectedPages = ['dashboard', 'reports'];
+    return protectedPages.includes(page);
+  },
+
+  // Check if page requires guest (not logged in)
+  requiresGuest(page) {
+    // Only index page requires guest (login/signup can be accessed by anyone)
+    return page === 'index';
+  },
+
+  // Redirect to landing page
+  redirectToLanding() {
+    // Prevent redirect loop
+    if (window.location.pathname.includes('index.html') || 
+        window.location.pathname === '/' || 
+        window.location.pathname.endsWith('/')) {
+      return;
+    }
+    
+    // Show loading state
+    this.showRedirectMessage('Redirecting to login...');
+    
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 500);
+  },
+
+  // Redirect to dashboard
+  redirectToDashboard() {
+    // Prevent redirect loop
+    if (window.location.pathname.includes('dashboard.html')) {
+      return;
+    }
+    
+    // Show loading state
+    this.showRedirectMessage('Redirecting to dashboard...');
+    
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 500);
+  },
+
+  // Show redirect message
+  showRedirectMessage(message) {
+    // Create a simple overlay message
+    const overlay = document.createElement('div');
+    overlay.className = 'auth-redirect-overlay';
+    overlay.innerHTML = `
+      <div class="auth-redirect-message">
+        <div class="auth-redirect-spinner"></div>
+        <p>${message}</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  },
+
+  // Update navigation visibility
+  updateNavigationVisibility(page, isAuthenticated) {
+    const header = document.querySelector('.header');
+    const nav = document.querySelector('.header__nav');
+    const authSection = document.querySelector('.header__auth');
+    
+    if (!header) return;
+
+    const guestPages = ['index', 'login', 'signup'];
+    
+    if (guestPages.includes(page)) {
+      // Guest pages - hide navigation, show minimal header
+      if (nav) nav.style.display = 'none';
+      header.classList.add('header--minimal');
+      
+      // Update auth buttons for guest pages
+      if (authSection && !isAuthenticated) {
+        if (page === 'login') {
+          authSection.innerHTML = `
+            <a href="login.html" class="btn-auth btn-auth--login btn-auth--active">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login</span>
+            </a>
+            <a href="signup.html" class="btn-auth btn-auth--signup">
+              <i class="fas fa-user-plus"></i>
+              <span>Sign Up</span>
+            </a>
+          `;
+        } else if (page === 'signup') {
+          authSection.innerHTML = `
+            <a href="login.html" class="btn-auth btn-auth--login">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login</span>
+            </a>
+            <a href="signup.html" class="btn-auth btn-auth--signup btn-auth--active">
+              <i class="fas fa-user-plus"></i>
+              <span>Sign Up</span>
+            </a>
+          `;
+        } else {
+          authSection.innerHTML = `
+            <a href="login.html" class="btn-auth btn-auth--login">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login</span>
+            </a>
+            <a href="signup.html" class="btn-auth btn-auth--signup">
+              <i class="fas fa-user-plus"></i>
+              <span>Sign Up</span>
+            </a>
+          `;
+        }
+      }
+    } else {
+      // App pages - show full navigation
+      if (nav) {
+        nav.style.display = 'flex';
+        // Ensure nav is visible on desktop
+        if (window.innerWidth >= 768) {
+          nav.style.display = 'flex';
+        }
+      }
+      header.classList.remove('header--minimal');
+      
+      // Update auth section based on auth state
+      if (authSection) {
+        if (isAuthenticated && this.currentUser) {
+          authSection.innerHTML = `
+            <div class="header__user-info">
+              <img src="assets/images/avatars/default-avatar.svg" alt="User Avatar" class="avatar avatar--small">
+              <span class="user__name">${this.currentUser.name}</span>
+            </div>
+            <button class="btn-auth btn-auth--logout" id="logoutBtn">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </button>
+          `;
+          
+          // Add logout event listener
+          const logoutBtn = document.getElementById('logoutBtn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+          }
+        } else {
+          authSection.innerHTML = `
+            <a href="login.html" class="btn-auth btn-auth--login">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login</span>
+            </a>
+            <a href="signup.html" class="btn-auth btn-auth--signup">
+              <i class="fas fa-user-plus"></i>
+              <span>Sign Up</span>
+            </a>
+          `;
+        }
+      }
+    }
+  },
+
+  // Login user
+  login(user) {
+    try {
+      // Create session token (simple implementation)
+      const sessionToken = btoa(JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+      }));
+
+      // Store user and session
+      localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, sessionToken);
+
+      this.currentUser = user;
+      this.isAuthenticated = true;
+
+      // Update UI
+      if (typeof App !== 'undefined') {
+        App.currentUser = user;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error logging in:', error);
+      return false;
+    }
+  },
+
+  // Logout user
+  logout() {
+    try {
+      // Clear storage
+      localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+      localStorage.removeItem(this.STORAGE_KEYS.SESSION_TOKEN);
+
+      this.currentUser = null;
+      this.isAuthenticated = false;
+
+      // Update UI
+      if (typeof App !== 'undefined') {
+        App.currentUser = null;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error logging out:', error);
+      return false;
+    }
+  },
+
+  // Handle logout action
+  handleLogout() {
+    if (this.logout()) {
+      // Show success message
+      if (typeof App !== 'undefined' && App.showSuccessMessage) {
+        App.showSuccessMessage('You have been logged out successfully.');
+      }
+      
+      // Redirect to landing page
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
+  },
+
+  // Get current user
+  getCurrentUser() {
+    return this.currentUser;
+  },
+
+  // Check if user is authenticated
+  isUserAuthenticated() {
+    return this.isAuthenticated;
+  }
+};
+
+// Initialize auth when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.init();
+});
+

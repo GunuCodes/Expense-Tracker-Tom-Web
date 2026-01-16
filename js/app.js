@@ -12,7 +12,15 @@ const App = {
   // Initialize the application
   init() {
     console.log('Expense Tracker App initialized');
-    this.checkAuthState();
+    
+    // Wait for Auth to initialize first
+    if (typeof Auth !== 'undefined' && Auth.checkAuthState) {
+      Auth.checkAuthState();
+      this.currentUser = Auth.getCurrentUser();
+    } else {
+      this.checkAuthState();
+    }
+    
     this.setupEventListeners();
     this.loadData();
     
@@ -1178,10 +1186,17 @@ const App = {
 
   // Check authentication state on load
   checkAuthState() {
-    const savedUser = this.getFromStorage(this.STORAGE_KEYS.CURRENT_USER);
-    if (savedUser) {
-      this.currentUser = savedUser;
-      this.updateAuthUI();
+    // Use Auth manager if available
+    if (typeof Auth !== 'undefined' && Auth.checkAuthState) {
+      Auth.checkAuthState();
+      this.currentUser = Auth.getCurrentUser();
+    } else {
+      // Fallback to direct check
+      const savedUser = this.getFromStorage(this.STORAGE_KEYS.CURRENT_USER);
+      if (savedUser) {
+        this.currentUser = savedUser;
+        this.updateAuthUI();
+      }
     }
   },
 
@@ -1264,12 +1279,20 @@ const App = {
     this.setToStorage(this.STORAGE_KEYS.USERS, users);
 
     // Auto-login after signup
-    this.currentUser = {
+    const currentUser = {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email
     };
-    this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
+    
+    // Use Auth manager to login
+    if (typeof Auth !== 'undefined' && Auth.login) {
+      Auth.login(currentUser);
+    } else {
+      // Fallback to direct storage
+      this.currentUser = currentUser;
+      this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, currentUser);
+    }
 
     this.showAuthMessage('signup', `Welcome, ${name}! Your account has been created successfully. Redirecting...`, 'success');
     
@@ -1287,7 +1310,7 @@ const App = {
     const remember = formData.get('remember');
 
     const messageEl = document.getElementById('loginMessage');
-
+    
     // Clear previous messages
     if (messageEl) {
       messageEl.textContent = '';
@@ -1315,12 +1338,20 @@ const App = {
     }
 
     // Set current user
-    this.currentUser = {
+    const currentUser = {
       id: user.id,
       name: user.name,
       email: user.email
     };
-    this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
+    
+    // Use Auth manager to login
+    if (typeof Auth !== 'undefined' && Auth.login) {
+      Auth.login(currentUser);
+    } else {
+      // Fallback to direct storage
+      this.currentUser = currentUser;
+      this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, currentUser);
+    }
 
     this.showAuthMessage('login', `Welcome back, ${user.name}! Redirecting...`, 'success');
     
@@ -1332,10 +1363,19 @@ const App = {
 
   // Handle logout
   handleLogout() {
-    this.currentUser = null;
-    localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
-    this.updateAuthUI();
-    this.showSuccessMessage('You have been logged out successfully.');
+    // Use Auth manager to logout
+    if (typeof Auth !== 'undefined' && Auth.handleLogout) {
+      Auth.handleLogout();
+    } else {
+      // Fallback to direct logout
+      this.currentUser = null;
+      localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+      this.updateAuthUI();
+      this.showSuccessMessage('You have been logged out successfully.');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
   },
 
   // Validate email format
