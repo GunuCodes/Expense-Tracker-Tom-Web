@@ -50,8 +50,17 @@ const Settings = {
   // Load profile settings
   loadProfileSettings(user) {
     const displayNameInput = document.getElementById('displayName');
+    const profilePicturePreview = document.getElementById('profilePicturePreview');
+    
     if (displayNameInput) {
       displayNameInput.value = user.name || '';
+    }
+    
+    // Load profile picture if saved
+    if (profilePicturePreview && user.profilePicture) {
+      profilePicturePreview.src = user.profilePicture;
+    } else if (profilePicturePreview) {
+      profilePicturePreview.src = 'assets/images/avatars/default-avatar.svg';
     }
   },
 
@@ -69,24 +78,15 @@ const Settings = {
 
   // Apply theme
   applyTheme(theme) {
-    if (theme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
-      document.body.setAttribute('data-theme', theme);
-    }
+    document.body.setAttribute('data-theme', theme || 'light');
   },
 
   // Load budget settings
   loadBudgetSettings(budgetSettings) {
     const monthlyBudgetInput = document.getElementById('monthlyBudget');
-    const budgetPeriodSelect = document.getElementById('budgetPeriod');
 
     if (monthlyBudgetInput) {
       monthlyBudgetInput.value = budgetSettings.monthlyBudget || 3000;
-    }
-    if (budgetPeriodSelect) {
-      budgetPeriodSelect.value = budgetSettings.period || 'monthly';
     }
 
     this.updateBudgetVisual();
@@ -98,13 +98,11 @@ const Settings = {
       const budgetData = localStorage.getItem('expenseTrackerBudgetSettings');
       return budgetData ? JSON.parse(budgetData) : {
         monthlyBudget: 3000,
-        period: 'monthly',
         categoryBudgets: {}
       };
     } catch {
       return {
         monthlyBudget: 3000,
-        period: 'monthly',
         categoryBudgets: {}
       };
     }
@@ -139,6 +137,7 @@ const Settings = {
 
     const budgetSettings = this.getBudgetSettings();
     const categoryBudgets = budgetSettings.categoryBudgets || {};
+    const currencySymbol = this.getCurrencySymbol();
 
     categoryBudgetsContainer.innerHTML = categories.map(category => {
       const budget = categoryBudgets[category.id] || 0;
@@ -154,7 +153,7 @@ const Settings = {
               <span class="category-budget-item__name">${category.name}</span>
             </div>
             <div class="category-budget-item__amount">
-              <span class="category-budget-item__spent">$${spent.toFixed(2)}</span>
+              <span class="category-budget-item__spent">${currencySymbol}${spent.toFixed(2)}</span>
               <span class="category-budget-item__separator">/</span>
               <input 
                 type="number" 
@@ -346,30 +345,6 @@ const Settings = {
       });
     }
 
-    // Data management buttons
-    const clearDataBtn = document.getElementById('clearDataBtn');
-    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-
-    if (clearDataBtn) {
-      clearDataBtn.addEventListener('click', () => {
-        this.showDeleteConfirmation('Clear All Data', 'Are you sure you want to clear all expense data? This action cannot be undone.', () => {
-          App.clearAllData();
-          App.showSuccessMessage('All data has been cleared successfully.');
-          // Reload page to refresh dashboard
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        });
-      });
-    }
-
-    if (deleteAccountBtn) {
-      deleteAccountBtn.addEventListener('click', () => {
-        this.showDeleteConfirmation('Delete Account', 'Are you sure you want to delete your account? All your data will be permanently deleted. This action cannot be undone.', () => {
-          this.handleDeleteAccount();
-        });
-      });
-    }
 
     // Cancel buttons
     const cancelButtons = document.querySelectorAll('[id$="Btn"][id^="cancel"]');
@@ -394,12 +369,22 @@ const Settings = {
     const currentUser = Auth.getCurrentUser() || App.currentUser;
     if (currentUser) {
       currentUser.name = displayName;
+      
+      // Get profile picture if it was uploaded
+      const profilePicturePreview = document.getElementById('profilePicturePreview');
+      if (profilePicturePreview && profilePicturePreview.src && 
+          !profilePicturePreview.src.includes('default-avatar.svg')) {
+        currentUser.profilePicture = profilePicturePreview.src;
+      }
 
       // Save to storage
       const users = App.getFromStorage(App.STORAGE_KEYS.USERS) || [];
       const userIndex = users.findIndex(u => u.id === currentUser.id);
       if (userIndex !== -1) {
         users[userIndex].name = displayName;
+        if (currentUser.profilePicture) {
+          users[userIndex].profilePicture = currentUser.profilePicture;
+        }
         App.setToStorage(App.STORAGE_KEYS.USERS, users);
       }
 
@@ -408,6 +393,9 @@ const Settings = {
       if (Auth.login) {
         Auth.login(currentUser);
       }
+      
+      // Update navigation to show new profile picture
+      this.updateNavigationProfilePicture(currentUser.profilePicture);
 
       App.showSuccessMessage('Profile updated successfully!');
     }
@@ -417,7 +405,6 @@ const Settings = {
   handleBudgetSubmit(form) {
     const formData = new FormData(form);
     const monthlyBudget = parseFloat(formData.get('monthlyBudget')) || 0;
-    const budgetPeriod = formData.get('budgetPeriod');
 
     // Get category budgets
     const categoryBudgetInputs = document.querySelectorAll('.category-budget-item__input');
@@ -432,7 +419,6 @@ const Settings = {
 
     const budgetSettings = {
       monthlyBudget,
-      period: budgetPeriod,
       categoryBudgets
     };
 
@@ -472,6 +458,9 @@ const Settings = {
       
       // Update currency symbol across pages
       this.updateCurrencySymbol();
+      
+      // Re-initialize category budgets to update currency symbols
+      this.initializeCategoryBudgets();
       
       // Reload dashboard if on dashboard page
       if (typeof Dashboard !== 'undefined' && Dashboard.updateCurrencySymbol) {
@@ -513,9 +502,22 @@ const Settings = {
       if (preview) {
         preview.src = e.target.result;
       }
-      App.showSuccessMessage('Profile picture updated! (Note: This is a preview only)');
+      // Profile picture will be saved when form is submitted
     };
     reader.readAsDataURL(file);
+  },
+  
+  // Update navigation profile picture
+  updateNavigationProfilePicture(profilePictureUrl) {
+    if (!profilePictureUrl) return;
+    
+    // Update avatar in navigation
+    const navAvatars = document.querySelectorAll('.avatar');
+    navAvatars.forEach(avatar => {
+      if (avatar.src && avatar.src.includes('default-avatar.svg')) {
+        avatar.src = profilePictureUrl;
+      }
+    });
   },
 
   // Show delete confirmation modal
@@ -555,29 +557,6 @@ const Settings = {
     });
   },
 
-  // Handle delete account
-  handleDeleteAccount() {
-    // Clear all data
-    App.clearAllData();
-    
-    // Clear user data
-    const currentUser = Auth.getCurrentUser() || App.currentUser;
-    if (currentUser) {
-      const users = App.getFromStorage(App.STORAGE_KEYS.USERS) || [];
-      const updatedUsers = users.filter(u => u.id !== currentUser.id);
-      App.setToStorage(App.STORAGE_KEYS.USERS, updatedUsers);
-    }
-
-    // Logout
-    if (Auth.logout) {
-      Auth.logout();
-    }
-
-    App.showSuccessMessage('Account deleted successfully. Redirecting...');
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 1500);
-  }
 };
 
 // Initialize settings when DOM is loaded

@@ -116,9 +116,10 @@ const Navigation = {
     this.updateAdminNavLink(isAdmin);
 
     if (isLoggedIn && currentUser) {
+      const profilePicture = currentUser.profilePicture || 'assets/images/avatars/default-avatar.svg';
       authSection.innerHTML = `
         <div class="header__user-info">
-          <img src="assets/images/avatars/default-avatar.svg" alt="User Avatar" class="avatar avatar--small">
+          <img src="${profilePicture}" alt="User Avatar" class="avatar avatar--small">
           <span class="user__name">${currentUser.name}</span>
         </div>
         <button class="btn-auth btn-auth--logout" id="logoutBtn">

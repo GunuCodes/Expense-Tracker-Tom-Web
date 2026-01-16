@@ -171,16 +171,6 @@
                         </div>
                         <div class="settings-section__body">
                             <form class="settings-form" id="budgetForm">
-                                <!-- Budget Period -->
-                                <div class="form__group">
-                                    <label for="budgetPeriod" class="form__label">Budget Period</label>
-                                    <select id="budgetPeriod" name="budgetPeriod" class="form__select">
-                                        <option value="weekly">Weekly</option>
-                                        <option value="monthly" selected>Monthly</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
-                                </div>
-
                                 <!-- Monthly Budget -->
                                 <div class="form__group">
                                     <label for="monthlyBudget" class="form__label">Monthly Budget</label>
@@ -246,7 +236,6 @@
                                     <select id="theme" name="theme" class="form__select">
                                         <option value="light" selected>Light</option>
                                         <option value="dark">Dark</option>
-                                        <option value="auto">Auto (System)</option>
                                     </select>
                                 </div>
 
@@ -276,46 +265,6 @@
                         </div>
                     </section>
 
-                    <!-- Data Management Section -->
-                    <section class="settings-section" id="dataSection">
-                        <div class="settings-section__header">
-                            <h2 class="settings-section__title">
-                                <i class="fas fa-database"></i>
-                                <span>Data Management</span>
-                            </h2>
-                        </div>
-                        <div class="settings-section__body">
-                            <div class="data-management">
-                                <!-- Clear All Data -->
-                                <div class="data-management__item">
-                                    <div class="data-management__info">
-                                        <h3 class="data-management__title">Clear All Data</h3>
-                                        <p class="data-management__description">Permanently delete all your expense data. This action cannot be undone.</p>
-                                    </div>
-                                    <div class="data-management__actions">
-                                        <button type="button" class="btn btn--danger" id="clearDataBtn">
-                                            <i class="fas fa-trash"></i>
-                                            <span>Clear All Data</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Account Deletion -->
-                                <div class="data-management__item data-management__item--danger">
-                                    <div class="data-management__info">
-                                        <h3 class="data-management__title">Delete Account</h3>
-                                        <p class="data-management__description">Permanently delete your account and all associated data. This action cannot be undone.</p>
-                                    </div>
-                                    <div class="data-management__actions">
-                                        <button type="button" class="btn btn--danger" id="deleteAccountBtn">
-                                            <i class="fas fa-user-times"></i>
-                                            <span>Delete Account</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </div>
         </div>

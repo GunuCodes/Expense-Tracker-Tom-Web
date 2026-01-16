@@ -64,12 +64,7 @@ const App = {
     
     // Apply theme
     if (settings.theme) {
-      if (settings.theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-      } else {
-        document.body.setAttribute('data-theme', settings.theme);
-      }
+      document.body.setAttribute('data-theme', settings.theme);
     }
   },
 
