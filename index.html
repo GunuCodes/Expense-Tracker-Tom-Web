@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal Expense Tracker - Track your spending and manage your finances">
+    <meta name="keywords" content="expense tracker, personal finance, budgeting, money management">
+    <meta name="author" content="Personal Expense Tracker">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Personal Expense Tracker">
+    <meta property="og:description" content="Track your spending and manage your finances">
+    <meta property="og:type" content="website">
+    
+    <title>Personal Expense Tracker</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header__content">
+                <h1 class="header__title">💰 Expense Tracker</h1>
+                <nav class="header__nav">
+                    <ul class="nav__list">
+                        <li class="nav__item">
+                            <a href="#dashboard" class="nav__link nav__link--active">Dashboard</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#expenses" class="nav__link">Expenses</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#reports" class="nav__link">Reports</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#settings" class="nav__link">Settings</a>
+                        </li>
+                    </ul>
+                </nav>
+                <button class="header__menu-toggle" aria-label="Toggle navigation menu">
+                    <span class="menu-toggle__line"></span>
+                    <span class="menu-toggle__line"></span>
+                    <span class="menu-toggle__line"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="dashboard">
+                <div class="dashboard__header">
+                    <h2 class="dashboard__title">Dashboard</h2>
+                    <p class="dashboard__subtitle">Track your expenses and manage your budget</p>
+                </div>
+                
+                <div class="dashboard__grid">
+                    <!-- Summary Cards -->
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="summary-card__icon">💳</div>
+                            <div class="summary-card__content">
+                                <h3 class="summary-card__title">Total Expenses</h3>
+                                <p class="summary-card__amount">$0.00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-card__icon">📊</div>
+                            <div class="summary-card__content">
+                                <h3 class="summary-card__title">This Month</h3>
+                                <p class="summary-card__amount">$0.00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-card__icon">🎯</div>
+                            <div class="summary-card__content">
+                                <h3 class="summary-card__title">Budget</h3>
+                                <p class="summary-card__amount">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <div class="chart-container">
+                            <h3 class="chart__title">Expense Categories</h3>
+                            <canvas id="expenseChart" class="chart__canvas"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 class="chart__title">Monthly Trend</h3>
+                            <canvas id="trendChart" class="chart__canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses Section -->
+            <section id="expenses" class="expenses">
+                <div class="expenses__header">
+                    <h2 class="expenses__title">Recent Expenses</h2>
+                    <button class="btn btn--primary">Add Expense</button>
+                </div>
+                
+                <div class="expenses__filters">
+                    <select class="form__select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="utilities">Utilities</option>
+                    </select>
+                    
+                    <input type="date" class="form__input" id="dateFilter">
+                </div>
+                
+                <div class="expenses__list">
+                    <div class="expense-item">
+                        <div class="expense-item__icon">🍔</div>
+                        <div class="expense-item__content">
+                            <h4 class="expense-item__title">Lunch</h4>
+                            <p class="expense-item__category">Food</p>
+                        </div>
+                        <div class="expense-item__amount">$12.50</div>
+                        <div class="expense-item__date">Today</div>
+                    </div>
+                    
+                    <div class="expense-item">
+                        <div class="expense-item__icon">🚗</div>
+                        <div class="expense-item__content">
+                            <h4 class="expense-item__title">Gas</h4>
+                            <p class="expense-item__category">Transport</p>
+                        </div>
+                        <div class="expense-item__amount">$45.00</div>
+                        <div class="expense-item__date">Yesterday</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <p class="footer__text">&copy; 2024 Personal Expense Tracker. All rights reserved.</p>
+                <div class="footer__links">
+                    <a href="#privacy" class="footer__link">Privacy Policy</a>
+                    <a href="#terms" class="footer__link">Terms of Service</a>
+                    <a href="#contact" class="footer__link">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+</html>
