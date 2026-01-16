@@ -36,7 +36,7 @@ const App = {
     }
     
     // Apply settings (theme, currency) after auth check
-    this.applySettings();
+    await this.applySettings();
     
     this.setupEventListeners();
     await this.loadData();
@@ -95,7 +95,7 @@ const App = {
   },
 
   // Apply settings (theme, currency)
-  applySettings() {
+  async applySettings() {
     // Check if user is logged in
     const isAuthenticated = (typeof Auth !== 'undefined' && Auth.isUserAuthenticated && Auth.isUserAuthenticated()) ||
                            (this.currentUser !== null);
@@ -106,12 +106,36 @@ const App = {
       return;
     }
     
-    const settings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS) || this.getDefaultSettings();
-    
-    // Apply theme
-    if (settings.theme) {
-        document.body.setAttribute('data-theme', settings.theme);
-    } else {
+    try {
+      // Load settings from API
+      if (typeof API !== 'undefined' && API.getSettings) {
+        try {
+          const settingsData = await API.getSettings();
+          const theme = settingsData.theme || 'light';
+          document.body.setAttribute('data-theme', theme);
+          
+          // Store in local settings for quick access
+          this.settings = {
+            ...this.settings,
+            theme: settingsData.theme,
+            currency: settingsData.currency
+          };
+        } catch (error) {
+          console.error('Error loading settings from API:', error);
+          // Fallback to localStorage
+          const settings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS) || this.getDefaultSettings();
+          const theme = settings.theme || 'light';
+          document.body.setAttribute('data-theme', theme);
+        }
+      } else {
+        // Fallback to localStorage
+        const settings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS) || this.getDefaultSettings();
+        const theme = settings.theme || 'light';
+        document.body.setAttribute('data-theme', theme);
+      }
+    } catch (error) {
+      console.error('Error applying settings:', error);
+      // Default to light theme on error
       document.body.setAttribute('data-theme', 'light');
     }
   },
@@ -294,19 +318,32 @@ const App = {
     const expenseItems = document.getElementById('expenseItems');
     if (!expenseItems) return;
 
+    // Remove existing listener to prevent duplicates
+    const newExpenseItems = expenseItems.cloneNode(true);
+    expenseItems.parentNode.replaceChild(newExpenseItems, expenseItems);
+    const updatedExpenseItems = document.getElementById('expenseItems');
+    if (!updatedExpenseItems) return;
+
     // Use event delegation for edit and delete buttons
-    expenseItems.addEventListener('click', (e) => {
-      const button = e.target.closest('[data-action]');
-      if (!button) return;
-
-      const action = button.getAttribute('data-action');
-      const expenseItem = button.closest('.expense-item');
-      const expenseId = expenseItem.getAttribute('data-expense-id');
-
-      if (action === 'edit') {
-        this.showEditForm(expenseId);
-      } else if (action === 'delete') {
-        this.handleDeleteExpense(expenseId);
+    updatedExpenseItems.addEventListener('click', (e) => {
+      // Check for edit/delete buttons by class
+      const editBtn = e.target.closest('.expense-item__action--edit');
+      const deleteBtn = e.target.closest('.expense-item__action--delete');
+      
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const expenseId = editBtn.getAttribute('data-id');
+        if (expenseId && typeof Dashboard !== 'undefined' && Dashboard.handleEditExpense) {
+          Dashboard.handleEditExpense(expenseId);
+        }
+      } else if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const expenseId = deleteBtn.getAttribute('data-id');
+        if (expenseId && typeof Dashboard !== 'undefined' && Dashboard.handleDeleteExpense) {
+          Dashboard.handleDeleteExpense(expenseId);
+        }
       }
     });
   },

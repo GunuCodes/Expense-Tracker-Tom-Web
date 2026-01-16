@@ -31,9 +31,10 @@ const Dashboard = {
 
   // Setup event listeners
   setupEventListeners() {
-    // Expense form submission (inline form)
+    // Expense form submission (inline form) - prevent duplicate listeners
     const expenseForm = document.getElementById('expenseForm');
-    if (expenseForm) {
+    if (expenseForm && !expenseForm.hasAttribute('data-listener-attached')) {
+      expenseForm.setAttribute('data-listener-attached', 'true');
       // Set today's date as default
       const dateInput = document.getElementById('expenseDate');
       if (dateInput && !dateInput.value) {
@@ -42,6 +43,7 @@ const Dashboard = {
       
       expenseForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent double submission
         this.handleExpenseSubmit(e.target);
       });
     }
@@ -65,39 +67,46 @@ const Dashboard = {
 
   // Handle expense form submission
   async handleExpenseSubmit(form) {
-    const formData = new FormData(form);
-    const expense = {
-      amount: parseFloat(formData.get('amount')),
-      description: formData.get('description'),
-      category: formData.get('category'),
-      date: formData.get('date')
-    };
+    // Prevent double submission
+    if (form.hasAttribute('data-submitting')) {
+      return;
+    }
+    form.setAttribute('data-submitting', 'true');
+    
+    try {
+      const formData = new FormData(form);
+      const expense = {
+        amount: parseFloat(formData.get('amount')),
+        description: formData.get('description'),
+        category: formData.get('category'),
+        date: formData.get('date')
+      };
 
-    if (App.validateExpense && App.validateExpense(expense)) {
-      await App.addExpense(expense);
-      
-      // Reset form and set today's date
-      form.reset();
-      const dateInput = document.getElementById('expenseDate');
-      if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
-      }
-      
-      // Update all dashboard components
-      this.updateMetrics();
-      this.updateCategoryBreakdown();
-      this.updateRecentTransactions();
-      this.updateBudgetProgress();
-      this.updateExpenseList();
-    } else if (!App.validateExpense) {
-      // Fallback if validateExpense doesn't exist
-      await App.addExpense(expense);
-      form.reset();
-      const dateInput = document.getElementById('expenseDate');
-      if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
-      }
-      this.updateMetrics();
+      if (App.validateExpense && App.validateExpense(expense)) {
+        await App.addExpense(expense);
+        
+        // Reset form and set today's date
+        form.reset();
+        const dateInput = document.getElementById('expenseDate');
+        if (dateInput) {
+          dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        
+        // Update all dashboard components
+        this.updateMetrics();
+        this.updateCategoryBreakdown();
+        this.updateRecentTransactions();
+        this.updateBudgetProgress();
+        this.updateExpenseList();
+      } else if (!App.validateExpense) {
+        // Fallback if validateExpense doesn't exist
+        await App.addExpense(expense);
+        form.reset();
+        const dateInput = document.getElementById('expenseDate');
+        if (dateInput) {
+          dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        this.updateMetrics();
       this.updateCategoryBreakdown();
       this.updateRecentTransactions();
       this.updateBudgetProgress();
@@ -495,8 +504,11 @@ const Dashboard = {
           day: 'numeric' 
         });
         
+        // Use MongoDB _id if available, otherwise use id
+        const expenseId = expense._id || expense.id;
+        
         return `
-          <div class="expense-item" data-id="${expense.id}">
+          <div class="expense-item" data-id="${expenseId}">
             <div class="expense-item__icon">${info.icon}</div>
             <div class="expense-item__content">
               <h4 class="expense-item__description">${expense.description}</h4>
@@ -504,10 +516,10 @@ const Dashboard = {
             </div>
             <div class="expense-item__amount">${currency}${expense.amount.toFixed(2)}</div>
             <div class="expense-item__actions">
-              <button class="expense-item__action expense-item__action--edit" data-id="${expense.id}" title="Edit">
+              <button class="expense-item__action expense-item__action--edit" data-id="${expenseId}" title="Edit">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="expense-item__action expense-item__action--delete" data-id="${expense.id}" title="Delete">
+              <button class="expense-item__action expense-item__action--delete" data-id="${expenseId}" title="Delete">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -515,33 +527,20 @@ const Dashboard = {
         `;
       }).join('');
 
-    // Setup event listeners for edit/delete
-    this.setupExpenseItemListeners();
-  },
-
-  // Setup expense item listeners
-  setupExpenseItemListeners() {
-    const deleteButtons = document.querySelectorAll('.expense-item__action--delete');
-    deleteButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = parseInt(btn.getAttribute('data-id'));
-        this.handleDeleteExpense(id);
-      });
-    });
-
-    const editButtons = document.querySelectorAll('.expense-item__action--edit');
-    editButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = parseInt(btn.getAttribute('data-id'));
-        this.handleEditExpense(id);
-      });
-    });
+    // Don't setup listeners here - app.js handles it with event delegation
+    // This prevents duplicate listeners
   },
 
   // Handle delete expense
   handleDeleteExpense(id) {
-    const expense = App.expenses.find(e => e.id === id);
-    if (!expense) return;
+    // Handle both MongoDB _id and local id
+    const expense = App.expenses.find(e => 
+      e.id === id || e._id === id || String(e.id) === String(id) || String(e._id) === String(id)
+    );
+    if (!expense) {
+      console.error('Expense not found with id:', id);
+      return;
+    }
 
     const modal = document.getElementById('deleteModal');
     const modalBody = document.getElementById('deleteModalBody');
@@ -566,8 +565,8 @@ const Dashboard = {
       cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
       // Add new listeners
-      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-        App.deleteExpense(id);
+      document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+        await App.deleteExpense(id);
         modal.classList.remove('modal--open');
         document.body.classList.remove('body--modal-open');
         
@@ -578,8 +577,6 @@ const Dashboard = {
         this.updateRecentTransactions();
         this.updateBudgetProgress();
         this.updateExpenseList();
-        
-        App.showSuccessMessage('Expense deleted successfully!');
       });
 
       document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
@@ -591,8 +588,14 @@ const Dashboard = {
 
   // Handle edit expense
   handleEditExpense(id) {
-    const expense = App.expenses.find(e => e.id === id);
-    if (!expense) return;
+    // Handle both MongoDB _id and local id
+    const expense = App.expenses.find(e => 
+      e.id === id || e._id === id || String(e.id) === String(id) || String(e._id) === String(id)
+    );
+    if (!expense) {
+      console.error('Expense not found with id:', id);
+      return;
+    }
 
     // Open modal and populate form
     const modal = document.getElementById('addExpenseModal');
@@ -607,18 +610,28 @@ const Dashboard = {
       modal.classList.add('modal--open');
       document.body.classList.add('body--modal-open');
 
-      // Update form submission to handle edit
-      const originalHandler = form.onsubmit;
-      form.onsubmit = (e) => {
+      // Store the expense ID for update
+      const expenseId = expense._id || expense.id;
+      
+      // Remove existing listener and add new one
+      const newForm = form.cloneNode(true);
+      form.parentNode.replaceChild(newForm, form);
+      const updatedForm = document.getElementById('expenseForm');
+      
+      updatedForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
-        expense.amount = parseFloat(formData.get('amount'));
-        expense.description = formData.get('description');
-        expense.category = formData.get('category');
-        expense.date = formData.get('date');
+        e.stopPropagation();
         
-        App.updateExpense(expense);
-        form.reset();
+        const formData = new FormData(updatedForm);
+        const updatedData = {
+          amount: parseFloat(formData.get('amount')),
+          description: formData.get('description'),
+          category: formData.get('category'),
+          date: formData.get('date')
+        };
+        
+        await App.updateExpense(expenseId, updatedData);
+        updatedForm.reset();
         modal.classList.remove('modal--open');
         document.body.classList.remove('body--modal-open');
         
@@ -631,8 +644,7 @@ const Dashboard = {
         this.updateExpenseList();
         
         App.showSuccessMessage('Expense updated successfully!');
-        form.onsubmit = originalHandler;
-      };
+      });
     }
   },
 

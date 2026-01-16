@@ -230,55 +230,44 @@ const Settings = {
 
   // Setup event listeners
   setupEventListeners() {
-    // Use event delegation for form submissions to ensure they work
-    document.addEventListener('submit', (e) => {
-      const form = e.target;
-      if (!form || !form.classList.contains('settings-form')) return;
-      
-      e.preventDefault();
-      
-      if (form.id === 'profileForm') {
-        this.handleProfileSubmit(form);
-      } else if (form.id === 'budgetForm') {
-        this.handleBudgetSubmit(form);
-      } else if (form.id === 'preferencesForm') {
-        this.handlePreferencesSubmit(form);
-      }
-    });
-
-    // Profile form (backup direct listener)
+    // Profile form - single listener only
     const profileForm = document.getElementById('profileForm');
     if (profileForm && !profileForm.hasAttribute('data-listener-attached')) {
       profileForm.setAttribute('data-listener-attached', 'true');
       profileForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         this.handleProfileSubmit(e.target);
       });
     }
 
-    // Budget form (backup direct listener)
+    // Budget form - single listener only, input only updates visual
     const budgetForm = document.getElementById('budgetForm');
     if (budgetForm && !budgetForm.hasAttribute('data-listener-attached')) {
       budgetForm.setAttribute('data-listener-attached', 'true');
       budgetForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         this.handleBudgetSubmit(e.target);
       });
 
+      // Input event only updates visual, does NOT save
       const monthlyBudgetInput = document.getElementById('monthlyBudget');
-      if (monthlyBudgetInput) {
+      if (monthlyBudgetInput && !monthlyBudgetInput.hasAttribute('data-listener-attached')) {
+        monthlyBudgetInput.setAttribute('data-listener-attached', 'true');
         monthlyBudgetInput.addEventListener('input', () => {
-          this.updateBudgetVisual();
+          this.updateBudgetVisual(); // Only visual update, no save
         });
       }
     }
 
-    // Preferences form (backup direct listener)
+    // Preferences form - single listener only
     const preferencesForm = document.getElementById('preferencesForm');
     if (preferencesForm && !preferencesForm.hasAttribute('data-listener-attached')) {
       preferencesForm.setAttribute('data-listener-attached', 'true');
       preferencesForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         this.handlePreferencesSubmit(e.target);
       });
     }
@@ -454,6 +443,11 @@ const Settings = {
         // Apply theme if changed
         if (settings.theme) {
           this.applyTheme(settings.theme);
+          
+          // Also update App settings for persistence
+          if (typeof App !== 'undefined' && App.applySettings) {
+            App.applySettings();
+          }
           
           // Update charts if on reports page
           if (typeof Charts !== 'undefined' && Charts.updateCharts) {
