@@ -343,6 +343,31 @@ const App = {
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map(expense => this.createExpenseItem(expense))
       .join('');
+    
+    // Setup event listeners for edit/delete buttons using event delegation
+    this.setupExpenseItemListeners();
+  },
+
+  // Setup event listeners for expense item actions
+  setupExpenseItemListeners() {
+    const expenseItems = document.getElementById('expenseItems');
+    if (!expenseItems) return;
+
+    // Use event delegation for edit and delete buttons
+    expenseItems.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-action]');
+      if (!button) return;
+
+      const action = button.getAttribute('data-action');
+      const expenseItem = button.closest('.expense-item');
+      const expenseId = parseInt(expenseItem.getAttribute('data-expense-id'));
+
+      if (action === 'edit') {
+        this.showEditForm(expenseId);
+      } else if (action === 'delete') {
+        this.handleDeleteExpense(expenseId);
+      }
+    });
   },
 
   // Create expense item HTML
@@ -376,7 +401,7 @@ const App = {
     });
 
     return `
-      <div class="expense-item">
+      <div class="expense-item" data-expense-id="${expense.id}">
         <div class="expense-item__icon">${categoryIcons[expense.category] || '📋'}</div>
         <div class="expense-item__content">
           <h4 class="expense-item__title">${expense.description}</h4>
@@ -384,6 +409,14 @@ const App = {
         </div>
         <div class="expense-item__amount">$${expense.amount.toFixed(2)}</div>
         <div class="expense-item__date">${formattedDate}</div>
+        <div class="expense-item__actions">
+          <button class="expense-item__btn expense-item__btn--edit" aria-label="Edit expense" data-action="edit">
+            <span class="expense-item__btn-icon">✏️</span>
+          </button>
+          <button class="expense-item__btn expense-item__btn--delete" aria-label="Delete expense" data-action="delete">
+            <span class="expense-item__btn-icon">🗑️</span>
+          </button>
+        </div>
       </div>
     `;
   },
@@ -431,6 +464,164 @@ const App = {
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map(expense => this.createExpenseItem(expense))
       .join('');
+    
+    // Setup event listeners for edit/delete buttons
+    this.setupExpenseItemListeners();
+  },
+
+  // Show edit form for expense
+  showEditForm(expenseId) {
+    const expense = this.getExpense(expenseId);
+    if (!expense) return;
+
+    const expenseItem = document.querySelector(`[data-expense-id="${expenseId}"]`);
+    if (!expenseItem || expenseItem.classList.contains('expense-item--editing')) return;
+
+    expenseItem.classList.add('expense-item--editing');
+    
+    const categoryIcons = {
+      food: '🍔',
+      transport: '🚗',
+      entertainment: '🎬',
+      utilities: '⚡',
+      shopping: '🛍️',
+      healthcare: '🏥',
+      education: '📚',
+      other: '📋'
+    };
+
+    const editFormHTML = `
+      <div class="expense-item__edit-form">
+        <div class="expense-item__edit-header">
+          <h4 class="expense-item__edit-title">Edit Expense</h4>
+        </div>
+        <form class="expense-item__edit-form-inner" data-expense-id="${expenseId}">
+          <div class="form__group">
+            <label for="editAmount_${expenseId}" class="form__label">Amount</label>
+            <div class="form__input-wrapper">
+              <span class="form__currency">$</span>
+              <input 
+                type="number" 
+                id="editAmount_${expenseId}" 
+                name="amount" 
+                class="form__input form__input--number" 
+                value="${expense.amount}"
+                step="0.01"
+                min="0"
+                required
+              >
+            </div>
+          </div>
+          
+          <div class="form__group">
+            <label for="editDescription_${expenseId}" class="form__label">Description</label>
+            <input 
+              type="text" 
+              id="editDescription_${expenseId}" 
+              name="description" 
+              class="form__input" 
+              value="${expense.description}"
+              required
+            >
+          </div>
+          
+          <div class="form__group">
+            <label for="editCategory_${expenseId}" class="form__label">Category</label>
+            <select id="editCategory_${expenseId}" name="category" class="form__select" required>
+              <option value="food" ${expense.category === 'food' ? 'selected' : ''}>🍔 Food & Dining</option>
+              <option value="transport" ${expense.category === 'transport' ? 'selected' : ''}>🚗 Transportation</option>
+              <option value="entertainment" ${expense.category === 'entertainment' ? 'selected' : ''}>🎬 Entertainment</option>
+              <option value="utilities" ${expense.category === 'utilities' ? 'selected' : ''}>⚡ Utilities</option>
+              <option value="shopping" ${expense.category === 'shopping' ? 'selected' : ''}>🛍️ Shopping</option>
+              <option value="healthcare" ${expense.category === 'healthcare' ? 'selected' : ''}>🏥 Healthcare</option>
+              <option value="education" ${expense.category === 'education' ? 'selected' : ''}>📚 Education</option>
+              <option value="other" ${expense.category === 'other' ? 'selected' : ''}>📋 Other</option>
+            </select>
+          </div>
+          
+          <div class="form__group">
+            <label for="editDate_${expenseId}" class="form__label">Date</label>
+            <input 
+              type="date" 
+              id="editDate_${expenseId}" 
+              name="date" 
+              class="form__input" 
+              value="${expense.date}"
+              required
+            >
+          </div>
+          
+          <div class="expense-item__edit-actions">
+            <button type="submit" class="btn btn--primary">Save</button>
+            <button type="button" class="btn btn--secondary" data-action="cancel-edit">Cancel</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    expenseItem.innerHTML = editFormHTML;
+
+    // Focus on first input
+    const firstInput = expenseItem.querySelector('input');
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100);
+    }
+
+    // Handle form submission
+    const form = expenseItem.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.saveEditedExpense(expenseId, form);
+      });
+    }
+
+    // Handle cancel button
+    const cancelBtn = expenseItem.querySelector('[data-action="cancel-edit"]');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        this.cancelEdit(expenseId);
+      });
+    }
+  },
+
+  // Save edited expense
+  saveEditedExpense(expenseId, form) {
+    const formData = new FormData(form);
+    const updatedData = {
+      amount: parseFloat(formData.get('amount')),
+      description: formData.get('description').trim(),
+      category: formData.get('category'),
+      date: formData.get('date')
+    };
+
+    // Validate
+    if (!this.validateExpense(updatedData)) {
+      return;
+    }
+
+    // Update expense
+    if (this.updateExpense(expenseId, updatedData)) {
+      // Expense list will be refreshed by updateExpense method
+    }
+  },
+
+  // Cancel edit
+  cancelEdit(expenseId) {
+    this.updateExpenseList();
+  },
+
+  // Handle delete expense
+  handleDeleteExpense(expenseId) {
+    const expense = this.getExpense(expenseId);
+    if (!expense) return;
+
+    // Simple confirmation dialog
+    const confirmed = confirm(`Are you sure you want to delete "${expense.description}"?`);
+    
+    if (confirmed) {
+      this.deleteExpense(expenseId);
+    }
   },
 
   // Show success message
