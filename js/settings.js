@@ -8,18 +8,17 @@ const Settings = {
   init() {
     console.log('Settings page initialized');
     
+    // Setup event listeners immediately
+    this.setupEventListeners();
+    
     // Wait for App to load data
     if (App.expenses && App.expenses.length > 0) {
       this.loadUserSettings();
-      this.setupEventListeners();
-      this.initializeCategoryBudgets();
       this.updateBudgetVisual();
     } else {
       // Wait a bit for data to load
       setTimeout(() => {
         this.loadUserSettings();
-        this.setupEventListeners();
-        this.initializeCategoryBudgets();
         this.updateBudgetVisual();
       }, 300);
     }
@@ -97,13 +96,11 @@ const Settings = {
     try {
       const budgetData = localStorage.getItem('expenseTrackerBudgetSettings');
       return budgetData ? JSON.parse(budgetData) : {
-        monthlyBudget: 3000,
-        categoryBudgets: {}
+        monthlyBudget: 3000
       };
     } catch {
       return {
-        monthlyBudget: 3000,
-        categoryBudgets: {}
+        monthlyBudget: 3000
       };
     }
   },
@@ -119,128 +116,6 @@ const Settings = {
     }
   },
 
-  // Initialize category budgets
-  initializeCategoryBudgets() {
-    const categoryBudgetsContainer = document.getElementById('categoryBudgets');
-    if (!categoryBudgetsContainer) return;
-
-    const categories = App.defaultCategories || [
-      { id: 'food', name: 'Food & Dining', icon: '🍔' },
-      { id: 'transport', name: 'Transportation', icon: '🚗' },
-      { id: 'entertainment', name: 'Entertainment', icon: '🎬' },
-      { id: 'utilities', name: 'Utilities', icon: '⚡' },
-      { id: 'shopping', name: 'Shopping', icon: '🛍️' },
-      { id: 'healthcare', name: 'Healthcare', icon: '🏥' },
-      { id: 'education', name: 'Education', icon: '📚' },
-      { id: 'other', name: 'Other', icon: '📋' }
-    ];
-
-    const budgetSettings = this.getBudgetSettings();
-    const categoryBudgets = budgetSettings.categoryBudgets || {};
-    const currencySymbol = this.getCurrencySymbol();
-
-    categoryBudgetsContainer.innerHTML = categories.map(category => {
-      const budget = categoryBudgets[category.id] || 0;
-      const spent = this.getCategorySpending(category.id);
-      const percentage = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
-      const isOverBudget = spent > budget && budget > 0;
-
-      return `
-        <div class="category-budget-item ${isOverBudget ? 'category-budget-item--over' : ''}" data-category="${category.id}">
-          <div class="category-budget-item__header">
-            <div class="category-budget-item__info">
-              <span class="category-budget-item__icon">${category.icon}</span>
-              <span class="category-budget-item__name">${category.name}</span>
-            </div>
-            <div class="category-budget-item__amount">
-              <span class="category-budget-item__spent">${currencySymbol}${spent.toFixed(2)}</span>
-              <span class="category-budget-item__separator">/</span>
-              <input 
-                type="number" 
-                class="category-budget-item__input" 
-                value="${budget}"
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                data-category="${category.id}"
-              >
-            </div>
-          </div>
-          ${budget > 0 ? `
-            <div class="category-budget-item__progress">
-              <div class="category-budget-item__progress-bar" style="width: ${percentage}%"></div>
-            </div>
-            <div class="category-budget-item__status">
-              <span class="category-budget-item__percentage">${percentage.toFixed(0)}%</span>
-              ${isOverBudget ? '<span class="category-budget-item__warning">Over Budget!</span>' : ''}
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }).join('');
-
-    // Add event listeners to category budget inputs
-    categoryBudgetsContainer.querySelectorAll('.category-budget-item__input').forEach(input => {
-      input.addEventListener('input', () => {
-        this.updateCategoryBudgetVisual(input);
-      });
-    });
-  },
-
-  // Get category spending
-  getCategorySpending(categoryId) {
-    const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    return expenses
-      .filter(expense => {
-        const expenseDate = new Date(expense.date);
-        return expense.category === categoryId &&
-               expenseDate.getMonth() === currentMonth &&
-               expenseDate.getFullYear() === currentYear;
-      })
-      .reduce((total, expense) => total + expense.amount, 0);
-  },
-
-  // Update category budget visual
-  updateCategoryBudgetVisual(input) {
-    const categoryId = input.getAttribute('data-category');
-    const budget = parseFloat(input.value) || 0;
-    const spent = this.getCategorySpending(categoryId);
-    const percentage = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
-    const isOverBudget = spent > budget && budget > 0;
-
-    const categoryItem = input.closest('.category-budget-item');
-    if (!categoryItem) return;
-
-    // Update progress bar
-    const progressBar = categoryItem.querySelector('.category-budget-item__progress-bar');
-    if (progressBar) {
-      progressBar.style.width = `${percentage}%`;
-    }
-
-    // Update percentage and warning
-    const percentageSpan = categoryItem.querySelector('.category-budget-item__percentage');
-    const warningSpan = categoryItem.querySelector('.category-budget-item__warning');
-    
-    if (budget > 0) {
-      if (percentageSpan) percentageSpan.textContent = `${percentage.toFixed(0)}%`;
-      
-      if (isOverBudget) {
-        categoryItem.classList.add('category-budget-item--over');
-        if (!warningSpan) {
-          const statusDiv = categoryItem.querySelector('.category-budget-item__status');
-          if (statusDiv) {
-            statusDiv.innerHTML = `<span class="category-budget-item__percentage">${percentage.toFixed(0)}%</span><span class="category-budget-item__warning">Over Budget!</span>`;
-          }
-        }
-      } else {
-        categoryItem.classList.remove('category-budget-item--over');
-        if (warningSpan) warningSpan.remove();
-      }
-    }
-  },
 
   // Update budget visual
   updateBudgetVisual() {
@@ -299,18 +174,36 @@ const Settings = {
 
   // Setup event listeners
   setupEventListeners() {
-    // Profile form
+    // Use event delegation for form submissions to ensure they work
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (!form || !form.classList.contains('settings-form')) return;
+      
+      e.preventDefault();
+      
+      if (form.id === 'profileForm') {
+        this.handleProfileSubmit(form);
+      } else if (form.id === 'budgetForm') {
+        this.handleBudgetSubmit(form);
+      } else if (form.id === 'preferencesForm') {
+        this.handlePreferencesSubmit(form);
+      }
+    });
+
+    // Profile form (backup direct listener)
     const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
+    if (profileForm && !profileForm.hasAttribute('data-listener-attached')) {
+      profileForm.setAttribute('data-listener-attached', 'true');
       profileForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.handleProfileSubmit(e.target);
       });
     }
 
-    // Budget form
+    // Budget form (backup direct listener)
     const budgetForm = document.getElementById('budgetForm');
-    if (budgetForm) {
+    if (budgetForm && !budgetForm.hasAttribute('data-listener-attached')) {
+      budgetForm.setAttribute('data-listener-attached', 'true');
       budgetForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.handleBudgetSubmit(e.target);
@@ -324,9 +217,10 @@ const Settings = {
       }
     }
 
-    // Preferences form
+    // Preferences form (backup direct listener)
     const preferencesForm = document.getElementById('preferencesForm');
-    if (preferencesForm) {
+    if (preferencesForm && !preferencesForm.hasAttribute('data-listener-attached')) {
+      preferencesForm.setAttribute('data-listener-attached', 'true');
       preferencesForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.handlePreferencesSubmit(e.target);
@@ -406,20 +300,13 @@ const Settings = {
     const formData = new FormData(form);
     const monthlyBudget = parseFloat(formData.get('monthlyBudget')) || 0;
 
-    // Get category budgets
-    const categoryBudgetInputs = document.querySelectorAll('.category-budget-item__input');
-    const categoryBudgets = {};
-    categoryBudgetInputs.forEach(input => {
-      const categoryId = input.getAttribute('data-category');
-      const budget = parseFloat(input.value) || 0;
-      if (budget > 0) {
-        categoryBudgets[categoryId] = budget;
-      }
-    });
+    if (monthlyBudget < 0) {
+      App.showError('Monthly budget must be a positive number');
+      return;
+    }
 
     const budgetSettings = {
-      monthlyBudget,
-      categoryBudgets
+      monthlyBudget
     };
 
     if (this.saveBudgetSettings(budgetSettings)) {
@@ -454,13 +341,16 @@ const Settings = {
       // Apply theme if changed
       if (settings.theme) {
         this.applyTheme(settings.theme);
+        
+        // Update charts if on reports page
+        if (typeof Charts !== 'undefined' && Charts.updateCharts) {
+          const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
+          Charts.updateCharts(expenses);
+        }
       }
       
       // Update currency symbol across pages
       this.updateCurrencySymbol();
-      
-      // Re-initialize category budgets to update currency symbols
-      this.initializeCategoryBudgets();
       
       // Reload dashboard if on dashboard page
       if (typeof Dashboard !== 'undefined' && Dashboard.updateCurrencySymbol) {

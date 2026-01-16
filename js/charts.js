@@ -33,6 +33,10 @@ const Charts = {
       }]
     };
 
+    // Get theme for chart colors
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    
     const config = {
       type: 'doughnut',
       data: data,
@@ -47,7 +51,8 @@ const Charts = {
               usePointStyle: true,
               font: {
                 size: 12
-              }
+              },
+              color: textColor
             }
           },
           tooltip: {
@@ -78,6 +83,11 @@ const Charts = {
 
     // Process expense data by month
     const monthlyData = this.processMonthlyData(expenses);
+    
+    // Get theme for chart colors
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? '#374151' : '#e2e8f0';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
     
     const data = {
       labels: monthlyData.labels,
@@ -114,9 +124,10 @@ const Charts = {
           y: {
             beginAtZero: true,
             grid: {
-              color: '#e2e8f0'
+              color: gridColor
             },
             ticks: {
+              color: textColor,
               callback: function(value) {
                 return '$' + value.toFixed(0);
               }
@@ -125,6 +136,9 @@ const Charts = {
           x: {
             grid: {
               display: false
+            },
+            ticks: {
+              color: textColor
             }
           }
         }
@@ -232,6 +246,9 @@ const Charts = {
   // Update charts with new data
   updateCharts(expenses) {
     console.log('Updating charts with new data:', expenses);
+    // Destroy existing charts first to apply new theme
+    this.destroyCharts();
+    // Recreate charts with updated theme
     this.createCategoryChart(expenses);
     this.createMonthlyChart(expenses);
     this.updateCategoryComparison(expenses);
