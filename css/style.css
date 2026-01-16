@@ -594,6 +594,12 @@ ol {
   min-height: calc(100vh - 140px);
 }
 
+/* Landing page - remove main padding for seamless sections */
+body:has(.hero) .main {
+  padding: 0;
+  min-height: auto;
+}
+
 /* ========================================
    EXPENSES SECTION
    ======================================== */
@@ -2105,6 +2111,7 @@ ol {
 .features--landing {
   background: var(--gradient-hero);
   padding: var(--spacing-16) 0;
+  margin-bottom: 0;
 }
 
 .features__title {
@@ -2222,13 +2229,14 @@ ol {
 
 /* CTA Section */
 .cta {
-  padding: var(--spacing-20) 0 0;
+  padding: var(--spacing-20) 0 var(--spacing-12);
   background: var(--gradient-primary);
   color: var(--color-white);
   text-align: center;
   position: relative;
   overflow: hidden;
   margin: 0;
+  margin-bottom: 0;
 }
 
 .cta::before {
