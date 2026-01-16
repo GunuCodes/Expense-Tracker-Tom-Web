@@ -285,51 +285,382 @@ const App = {
     }
   },
 
-  // Load data from localStorage
+  // ========================================
+  // LOCAL STORAGE MANAGEMENT
+  // ========================================
+  
+  // Storage keys
+  STORAGE_KEYS: {
+    EXPENSES: 'expenseTrackerExpenses',
+    CATEGORIES: 'expenseTrackerCategories',
+    SETTINGS: 'expenseTrackerSettings'
+  },
+
+  // Default categories
+  defaultCategories: [
+    { id: 'food', name: 'Food & Dining', icon: '🍔', color: '#fbbf24' },
+    { id: 'transport', name: 'Transportation', icon: '🚗', color: '#3b82f6' },
+    { id: 'entertainment', name: 'Entertainment', icon: '🎬', color: '#8b5cf6' },
+    { id: 'utilities', name: 'Utilities', icon: '⚡', color: '#10b981' },
+    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#ec4899' },
+    { id: 'healthcare', name: 'Healthcare', icon: '🏥', color: '#ef4444' },
+    { id: 'education', name: 'Education', icon: '📚', color: '#06b6d4' },
+    { id: 'other', name: 'Other', icon: '📋', color: '#6b7280' }
+  ],
+
+  // Load data from localStorage with error handling
   loadData() {
-    const savedExpenses = localStorage.getItem('expenseTrackerExpenses');
-    if (savedExpenses) {
-      this.expenses = JSON.parse(savedExpenses);
-    } else {
-      // Demo data
-      this.expenses = [
-        {
-          id: 1,
-          amount: 12.50,
-          description: 'Lunch at Cafe',
-          category: 'food',
-          date: '2024-12-15'
-        },
-        {
-          id: 2,
-          amount: 45.00,
-          description: 'Gas Station',
-          category: 'transport',
-          date: '2024-12-14'
-        },
-        {
-          id: 3,
-          amount: 24.00,
-          description: 'Movie Tickets',
-          category: 'entertainment',
-          date: '2024-12-13'
-        },
-        {
-          id: 4,
-          amount: 89.50,
-          description: 'Electric Bill',
-          category: 'utilities',
-          date: '2024-12-12'
-        }
-      ];
+    try {
+      // Load expenses
+      const savedExpenses = this.getFromStorage(this.STORAGE_KEYS.EXPENSES);
+      if (savedExpenses && Array.isArray(savedExpenses)) {
+        this.expenses = savedExpenses;
+      } else {
+        this.expenses = this.getDemoExpenses();
+        this.saveExpenses();
+      }
+
+      // Load categories
+      const savedCategories = this.getFromStorage(this.STORAGE_KEYS.CATEGORIES);
+      if (savedCategories && Array.isArray(savedCategories)) {
+        this.categories = savedCategories;
+      } else {
+        this.categories = [...this.defaultCategories];
+        this.saveCategories();
+      }
+
+      // Load settings
+      const savedSettings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS);
+      this.settings = savedSettings || this.getDefaultSettings();
+      
+      this.updateExpenseList();
+      console.log('Data loaded successfully:', {
+        expenses: this.expenses.length,
+        categories: this.categories.length
+      });
+    } catch (error) {
+      console.error('Error loading data:', error);
+      this.showError('Failed to load saved data. Using demo data.');
+      this.initializeWithDemoData();
     }
-    
+  },
+
+  // Get demo expenses
+  getDemoExpenses() {
+    return [
+      {
+        id: Date.now() - 4,
+        amount: 12.50,
+        description: 'Lunch at Cafe',
+        category: 'food',
+        date: '2024-12-15',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: Date.now() - 3,
+        amount: 45.00,
+        description: 'Gas Station',
+        category: 'transport',
+        date: '2024-12-14',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: Date.now() - 2,
+        amount: 24.00,
+        description: 'Movie Tickets',
+        category: 'entertainment',
+        date: '2024-12-13',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: Date.now() - 1,
+        amount: 89.50,
+        description: 'Electric Bill',
+        category: 'utilities',
+        date: '2024-12-12',
+        createdAt: new Date().toISOString()
+      }
+    ];
+  },
+
+  // Get default settings
+  getDefaultSettings() {
+    return {
+      currency: 'USD',
+      dateFormat: 'MM/DD/YYYY',
+      theme: 'light',
+      notifications: true,
+      budgetLimit: 3000
+    };
+  },
+
+  // Initialize with demo data
+  initializeWithDemoData() {
+    this.expenses = this.getDemoExpenses();
+    this.categories = [...this.defaultCategories];
+    this.settings = this.getDefaultSettings();
     this.updateExpenseList();
   },
 
-  // Save data to localStorage
-  saveData() {
-    localStorage.setItem('expenseTrackerExpenses', JSON.stringify(this.expenses));
+  // Generic storage getter with error handling
+  getFromStorage(key) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error(`Error reading from localStorage key "${key}":`, error);
+      return null;
+    }
+  },
+
+  // Generic storage setter with error handling
+  setToStorage(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.error(`Error writing to localStorage key "${key}":`, error);
+      return false;
+    }
+  },
+
+  // Save expenses to localStorage
+  saveExpenses() {
+    const success = this.setToStorage(this.STORAGE_KEYS.EXPENSES, this.expenses);
+    if (!success) {
+      this.showError('Failed to save expenses. Data may be lost.');
+    }
+    return success;
+  },
+
+  // Save categories to localStorage
+  saveCategories() {
+    const success = this.setToStorage(this.STORAGE_KEYS.CATEGORIES, this.categories);
+    if (!success) {
+      this.showError('Failed to save categories.');
+    }
+    return success;
+  },
+
+  // Save settings to localStorage
+  saveSettings() {
+    const success = this.setToStorage(this.STORAGE_KEYS.SETTINGS, this.settings);
+    if (!success) {
+      this.showError('Failed to save settings.');
+    }
+    return success;
+  },
+
+  // ========================================
+  // CRUD OPERATIONS
+  // ========================================
+
+  // Create - Add new expense
+  addExpense(expense) {
+    try {
+      const newExpense = {
+        id: Date.now(),
+        amount: parseFloat(expense.amount),
+        description: expense.description.trim(),
+        category: expense.category,
+        date: expense.date,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      this.expenses.push(newExpense);
+      this.saveExpenses();
+      this.updateExpenseList();
+      this.updateCharts();
+      this.showSuccessMessage('Expense added successfully!');
+      return newExpense;
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      this.showError('Failed to add expense. Please try again.');
+      return null;
+    }
+  },
+
+  // Read - Get expense by ID
+  getExpense(id) {
+    return this.expenses.find(expense => expense.id === id);
+  },
+
+  // Update - Update existing expense
+  updateExpense(id, updatedData) {
+    try {
+      const index = this.expenses.findIndex(expense => expense.id === id);
+      if (index === -1) {
+        this.showError('Expense not found.');
+        return false;
+      }
+
+      this.expenses[index] = {
+        ...this.expenses[index],
+        ...updatedData,
+        updatedAt: new Date().toISOString()
+      };
+
+      this.saveExpenses();
+      this.updateExpenseList();
+      this.updateCharts();
+      this.showSuccessMessage('Expense updated successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      this.showError('Failed to update expense. Please try again.');
+      return false;
+    }
+  },
+
+  // Delete - Remove expense
+  deleteExpense(id) {
+    try {
+      const index = this.expenses.findIndex(expense => expense.id === id);
+      if (index === -1) {
+        this.showError('Expense not found.');
+        return false;
+      }
+
+      this.expenses.splice(index, 1);
+      this.saveExpenses();
+      this.updateExpenseList();
+      this.updateCharts();
+      this.showSuccessMessage('Expense deleted successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      this.showError('Failed to delete expense. Please try again.');
+      return false;
+    }
+  },
+
+  // Get all expenses
+  getAllExpenses() {
+    return [...this.expenses];
+  },
+
+  // Get expenses by category
+  getExpensesByCategory(category) {
+    return this.expenses.filter(expense => expense.category === category);
+  },
+
+  // Get expenses by date range
+  getExpensesByDateRange(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate >= start && expenseDate <= end;
+    });
+  },
+
+  // Get total spending
+  getTotalSpending() {
+    return this.expenses.reduce((total, expense) => total + expense.amount, 0);
+  },
+
+  // Get spending by category
+  getSpendingByCategory() {
+    const categoryTotals = {};
+    this.expenses.forEach(expense => {
+      if (categoryTotals[expense.category]) {
+        categoryTotals[expense.category] += expense.amount;
+      } else {
+        categoryTotals[expense.category] = expense.amount;
+      }
+    });
+    return categoryTotals;
+  },
+
+  // Clear all data
+  clearAllData() {
+    try {
+      localStorage.removeItem(this.STORAGE_KEYS.EXPENSES);
+      localStorage.removeItem(this.STORAGE_KEYS.CATEGORIES);
+      localStorage.removeItem(this.STORAGE_KEYS.SETTINGS);
+      
+      this.expenses = [];
+      this.categories = [...this.defaultCategories];
+      this.settings = this.getDefaultSettings();
+      
+      this.updateExpenseList();
+      this.updateCharts();
+      this.showSuccessMessage('All data cleared successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      this.showError('Failed to clear data. Please try again.');
+      return false;
+    }
+  },
+
+  // Export data as JSON
+  exportData() {
+    try {
+      const exportData = {
+        expenses: this.expenses,
+        categories: this.categories,
+        settings: this.settings,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+      };
+
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `expense-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      
+      URL.revokeObjectURL(url);
+      this.showSuccessMessage('Data exported successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      this.showError('Failed to export data. Please try again.');
+      return false;
+    }
+  },
+
+  // Import data from JSON
+  importData(file) {
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importData = JSON.parse(e.target.result);
+          
+          if (importData.expenses && Array.isArray(importData.expenses)) {
+            this.expenses = importData.expenses;
+            this.saveExpenses();
+          }
+          
+          if (importData.categories && Array.isArray(importData.categories)) {
+            this.categories = importData.categories;
+            this.saveCategories();
+          }
+          
+          if (importData.settings) {
+            this.settings = { ...this.settings, ...importData.settings };
+            this.saveSettings();
+          }
+          
+          this.updateExpenseList();
+          this.updateCharts();
+          this.showSuccessMessage('Data imported successfully!');
+        } catch (parseError) {
+          console.error('Error parsing imported data:', parseError);
+          this.showError('Invalid file format. Please check your backup file.');
+        }
+      };
+      reader.readAsText(file);
+    } catch (error) {
+      console.error('Error importing data:', error);
+      this.showError('Failed to import data. Please try again.');
+    }
   },
 
   // Initialize charts (called from charts.js)
