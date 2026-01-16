@@ -266,164 +266,21 @@
             <section id="reports" class="reports">
                 <div class="reports__header">
                     <h2 class="reports__title">Spending Reports</h2>
-                    <p class="reports__subtitle">Visualize your spending patterns and trends</p>
                 </div>
                 
-                <!-- Reports Filters -->
-                <div class="reports__filters">
-                    <div class="filter-group">
-                        <label for="reportsCategoryFilter" class="filter__label">Category</label>
-                        <select id="reportsCategoryFilter" class="form__select form__select--small">
-                            <option value="">All Categories</option>
-                            <option value="food">🍔 Food & Dining</option>
-                            <option value="transport">🚗 Transportation</option>
-                            <option value="entertainment">🎬 Entertainment</option>
-                            <option value="utilities">⚡ Utilities</option>
-                            <option value="shopping">🛍️ Shopping</option>
-                            <option value="healthcare">🏥 Healthcare</option>
-                            <option value="education">📚 Education</option>
-                            <option value="other">📋 Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="reportsDateRange" class="filter__label">Date Range</label>
-                        <select id="reportsDateRange" class="form__select form__select--small">
-                            <option value="7days">Last 7 Days</option>
-                            <option value="30days">Last 30 Days</option>
-                            <option value="3months">Last 3 Months</option>
-                            <option value="6months">Last 6 Months</option>
-                            <option value="1year">Last Year</option>
-                            <option value="custom">Custom Range</option>
-                        </select>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="reportsViewType" class="filter__label">View</label>
-                        <select id="reportsViewType" class="form__select form__select--small">
-                            <option value="overview">Overview</option>
-                            <option value="detailed">Detailed</option>
-                            <option value="comparison">Comparison</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Charts Grid -->
+                <!-- Simple Charts -->
                 <div class="reports__charts">
-                    <!-- Monthly Spending Bar Chart -->
                     <div class="chart-card">
-                        <div class="chart-card__header">
-                            <h3 class="chart-card__title">Monthly Spending Trend</h3>
-                            <p class="chart-card__description">Track your spending patterns over time</p>
-                        </div>
-                        
-                        <div class="chart-card__content">
-                            <div class="chart-container">
-                                <canvas id="monthlySpendingChart" class="chart__canvas"></canvas>
-                            </div>
-                            
-                            <!-- Loading State -->
-                            <div class="chart-loading" id="monthlyChartLoading">
-                                <div class="loading-spinner"></div>
-                                <p class="loading-text">Loading chart data...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-card__legend">
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--primary"></span>
-                                <span class="legend__label">Total Spending</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--secondary"></span>
-                                <span class="legend__label">Budget Limit</span>
-                            </div>
+                        <h3 class="chart-card__title">Monthly Spending</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlySpendingChart" class="chart__canvas"></canvas>
                         </div>
                     </div>
                     
-                    <!-- Category Distribution Pie Chart -->
                     <div class="chart-card">
-                        <div class="chart-card__header">
-                            <h3 class="chart-card__title">Spending by Category</h3>
-                            <p class="chart-card__description">Breakdown of expenses by category</p>
-                        </div>
-                        
-                        <div class="chart-card__content">
-                            <div class="chart-container">
-                                <canvas id="categoryDistributionChart" class="chart__canvas"></canvas>
-                            </div>
-                            
-                            <!-- Loading State -->
-                            <div class="chart-loading" id="categoryChartLoading">
-                                <div class="loading-spinner"></div>
-                                <p class="loading-text">Loading chart data...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-card__legend">
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--food"></span>
-                                <span class="legend__label">Food & Dining</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--transport"></span>
-                                <span class="legend__label">Transportation</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--entertainment"></span>
-                                <span class="legend__label">Entertainment</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--utilities"></span>
-                                <span class="legend__label">Utilities</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--shopping"></span>
-                                <span class="legend__label">Shopping</span>
-                            </div>
-                            <div class="legend__item">
-                                <span class="legend__color legend__color--other"></span>
-                                <span class="legend__label">Other</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Summary Statistics -->
-                <div class="reports__summary">
-                    <div class="summary-stat">
-                        <div class="summary-stat__icon">📊</div>
-                        <div class="summary-stat__content">
-                            <h4 class="summary-stat__title">Total Spent</h4>
-                            <p class="summary-stat__value">$2,450.75</p>
-                            <p class="summary-stat__change summary-stat__change--positive">+12.5% from last month</p>
-                        </div>
-                    </div>
-                    
-                    <div class="summary-stat">
-                        <div class="summary-stat__icon">🎯</div>
-                        <div class="summary-stat__content">
-                            <h4 class="summary-stat__title">Budget Remaining</h4>
-                            <p class="summary-stat__value">$549.25</p>
-                            <p class="summary-stat__change summary-stat__change--neutral">22% of budget left</p>
-                        </div>
-                    </div>
-                    
-                    <div class="summary-stat">
-                        <div class="summary-stat__icon">📈</div>
-                        <div class="summary-stat__content">
-                            <h4 class="summary-stat__title">Top Category</h4>
-                            <p class="summary-stat__value">Food & Dining</p>
-                            <p class="summary-stat__change summary-stat__change--neutral">35% of total spending</p>
-                        </div>
-                    </div>
-                    
-                    <div class="summary-stat">
-                        <div class="summary-stat__icon">💡</div>
-                        <div class="summary-stat__content">
-                            <h4 class="summary-stat__title">Daily Average</h4>
-                            <p class="summary-stat__value">$81.69</p>
-                            <p class="summary-stat__change summary-stat__change--negative">+$5.20 from last month</p>
+                        <h3 class="chart-card__title">Spending by Category</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryDistributionChart" class="chart__canvas"></canvas>
                         </div>
                     </div>
                 </div>
@@ -435,58 +292,10 @@
     <footer class="footer">
         <div class="container">
             <div class="footer__content">
-                <div class="footer__main">
-                    <div class="footer__brand">
-                        <h3 class="footer__title">ExpenseTracker</h3>
-                        <p class="footer__tagline">Track your spending, manage your budget</p>
-                    </div>
-                    
-                    <div class="footer__links">
-                        <div class="footer__section">
-                            <h4 class="footer__section-title">Product</h4>
-                            <ul class="footer__list">
-                                <li><a href="#features" class="footer__link">Features</a></li>
-                                <li><a href="#pricing" class="footer__link">Pricing</a></li>
-                                <li><a href="#updates" class="footer__link">Updates</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="footer__section">
-                            <h4 class="footer__section-title">Support</h4>
-                            <ul class="footer__list">
-                                <li><a href="#help" class="footer__link">Help Center</a></li>
-                                <li><a href="#contact" class="footer__link">Contact Us</a></li>
-                                <li><a href="#faq" class="footer__link">FAQ</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="footer__section">
-                            <h4 class="footer__section-title">Legal</h4>
-                            <ul class="footer__list">
-                                <li><a href="#privacy" class="footer__link">Privacy Policy</a></li>
-                                <li><a href="#terms" class="footer__link">Terms of Service</a></li>
-                                <li><a href="#cookies" class="footer__link">Cookie Policy</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="footer__bottom">
-                    <div class="footer__copyright">
-                        <p class="footer__text">&copy; 2024 ExpenseTracker. All rights reserved.</p>
-                    </div>
-                    
-                    <div class="footer__social">
-                        <a href="#" class="footer__social-link" aria-label="Follow us on Twitter">
-                            <span class="footer__social-icon">🐦</span>
-                        </a>
-                        <a href="#" class="footer__social-link" aria-label="Follow us on Facebook">
-                            <span class="footer__social-icon">📘</span>
-                        </a>
-                        <a href="#" class="footer__social-link" aria-label="Follow us on LinkedIn">
-                            <span class="footer__social-icon">💼</span>
-                        </a>
-                    </div>
+                <p class="footer__text">&copy; 2024 ExpenseTracker. All rights reserved.</p>
+                <div class="footer__links">
+                    <a href="#privacy" class="footer__link">Privacy</a>
+                    <a href="#terms" class="footer__link">Terms</a>
                 </div>
             </div>
         </div>
