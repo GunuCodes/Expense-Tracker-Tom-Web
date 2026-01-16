@@ -24,7 +24,7 @@ const App = {
       Auth.checkAuthState();
       this.currentUser = Auth.getCurrentUser();
     } else {
-    this.checkAuthState();
+      this.checkAuthState();
     }
     
     this.setupEventListeners();
@@ -67,7 +67,7 @@ const App = {
       if (settings.theme === 'auto') {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
+      } else {
         document.body.setAttribute('data-theme', settings.theme);
       }
     }
@@ -1241,11 +1241,11 @@ const App = {
       this.currentUser = Auth.getCurrentUser();
     } else {
       // Fallback to direct check
-    const savedUser = this.getFromStorage(this.STORAGE_KEYS.CURRENT_USER);
-    if (savedUser) {
-      this.currentUser = savedUser;
-      this.updateAuthUI();
-    }
+      const savedUser = this.getFromStorage(this.STORAGE_KEYS.CURRENT_USER);
+      if (savedUser) {
+        this.currentUser = savedUser;
+        this.updateAuthUI();
+      }
     }
   },
 
@@ -1362,7 +1362,7 @@ const App = {
     const remember = formData.get('remember');
 
     const messageEl = document.getElementById('loginMessage');
-
+    
     // Clear previous messages
     if (messageEl) {
       messageEl.textContent = '';
@@ -1423,10 +1423,10 @@ const App = {
       Auth.handleLogout();
     } else {
       // Fallback to direct logout
-    this.currentUser = null;
-    localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
-    this.updateAuthUI();
-    this.showSuccessMessage('You have been logged out successfully.');
+      this.currentUser = null;
+      localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+      this.updateAuthUI();
+      this.showSuccessMessage('You have been logged out successfully.');
       setTimeout(() => {
         window.location.href = 'index.html';
       }, 1000);

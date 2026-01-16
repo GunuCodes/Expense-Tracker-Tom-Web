@@ -4019,3 +4019,113 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* ========================================
+   GOOGLE AUTHENTICATION STYLES
+   ======================================== */
+
+/* Google Login Container */
+.google-login-container {
+  margin: var(--spacing-4) 0;
+  display: flex;
+  justify-content: center;
+}
+
+.google-login-container iframe {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+/* Auth Card Divider */
+.auth-card__divider {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-6) 0 var(--spacing-4);
+  position: relative;
+}
+
+.auth-card__divider::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-300);
+}
+
+.auth-card__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-300);
+}
+
+.auth-card__divider-text {
+  padding: 0 var(--spacing-3);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* Google Auth Loading State */
+.google-auth-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.google-auth-loading-content {
+  background: var(--color-white);
+  padding: var(--spacing-8);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease-out;
+}
+
+.google-auth-loading-content .spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-4);
+  border: 4px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.google-auth-loading-content p {
+  color: var(--color-gray-700);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
+}
+
+/* Google Button Styling */
+#googleLoginContainer > div > div {
+  width: 100%;
+}
+
+#googleSignupContainer > div > div {
+  width: 100%;
+}
+
+/* Google button responsiveness */
+@media (max-width: 768px) {
+  .auth-card__divider {
+    margin: var(--spacing-4) 0 var(--spacing-3);
+  }
+
+  .google-auth-loading-content {
+    padding: var(--spacing-6);
+    margin: 0 var(--spacing-4);
+  }
+}
