@@ -38,7 +38,7 @@
             <div class="header__content">
                 <!-- Logo/App Name -->
                 <div class="header__brand">
-                    <a href="index.html" class="header__logo-link">
+                    <a href="dashboard.html" class="header__logo-link">
                         <img src="assets/logos/logo.svg" alt="ExpenseTracker Logo" class="header__logo">
                         <span class="header__title--sr-only">ExpenseTracker</span>
                     </a>
@@ -91,32 +91,78 @@
     </header>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main main--reports">
         <div class="container">
-            <!-- Reports Section -->
-            <section class="reports">
-                <div class="reports__header">
-                    <h2 class="reports__title">Spending Reports</h2>
-                    <p class="reports__subtitle">Analyze your spending patterns and track your financial progress</p>
+            <!-- Reports Header -->
+            <div class="reports-header">
+                <div class="reports-header__content">
+                    <h1 class="reports-header__title">Spending Reports</h1>
+                    <p class="reports-header__subtitle">Analyze your spending patterns and track your financial progress</p>
                 </div>
-                
-                <!-- Simple Charts -->
-                <div class="reports__charts">
-                    <div class="chart-card">
-                        <h3 class="chart-card__title">Monthly Spending</h3>
+            </div>
+
+            <!-- Reports Grid -->
+            <div class="reports-grid">
+                <!-- Monthly Spending Chart -->
+                <div class="dashboard-card dashboard-card--chart">
+                    <div class="dashboard-card__header">
+                        <h2 class="dashboard-card__title">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Monthly Spending</span>
+                        </h2>
+                    </div>
+                    <div class="dashboard-card__body">
                         <div class="chart-container">
                             <canvas id="monthlySpendingChart" class="chart__canvas"></canvas>
                         </div>
                     </div>
-                    
-                    <div class="chart-card">
-                        <h3 class="chart-card__title">Spending by Category</h3>
+                </div>
+                
+                <!-- Category Distribution Chart -->
+                <div class="dashboard-card dashboard-card--chart">
+                    <div class="dashboard-card__header">
+                        <h2 class="dashboard-card__title">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Spending by Category</span>
+                        </h2>
+                    </div>
+                    <div class="dashboard-card__body">
                         <div class="chart-container">
                             <canvas id="categoryDistributionChart" class="chart__canvas"></canvas>
                         </div>
                     </div>
                 </div>
-            </section>
+
+                <!-- Category Comparison -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card__header">
+                        <h2 class="dashboard-card__title">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Category Comparison</span>
+                        </h2>
+                    </div>
+                    <div class="dashboard-card__body">
+                        <div class="category-comparison" id="categoryComparison">
+                            <!-- Category comparison will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spending Trends -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card__header">
+                        <h2 class="dashboard-card__title">
+                            <i class="fas fa-trending-up"></i>
+                            <span>Spending Trends</span>
+                        </h2>
+                    </div>
+                    <div class="dashboard-card__body">
+                        <div class="spending-trends" id="spendingTrends">
+                            <!-- Spending trends will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -140,4 +186,3 @@
     <script src="js/navigation.js"></script>
 </body>
 </html>
-

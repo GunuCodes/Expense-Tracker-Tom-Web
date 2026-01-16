@@ -13,6 +13,9 @@ const App = {
   init() {
     console.log('Expense Tracker App initialized');
     
+    // Apply settings (theme, currency) first
+    this.applySettings();
+    
     // Wait for Auth to initialize first
     if (typeof Auth !== 'undefined' && Auth.checkAuthState) {
       Auth.checkAuthState();
@@ -26,6 +29,21 @@ const App = {
     
     // Initialize page-specific features
     this.initializePageFeatures();
+  },
+
+  // Apply settings (theme, currency)
+  applySettings() {
+    const settings = this.getFromStorage(this.STORAGE_KEYS.SETTINGS) || this.getDefaultSettings();
+    
+    // Apply theme
+    if (settings.theme) {
+      if (settings.theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      } else {
+        document.body.setAttribute('data-theme', settings.theme);
+      }
+    }
   },
 
   // Initialize page-specific features

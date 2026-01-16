@@ -35,7 +35,7 @@
             <div class="header__content">
                 <!-- Logo/App Name -->
                 <div class="header__brand">
-                    <a href="index.html" class="header__logo-link">
+                    <a href="dashboard.html" class="header__logo-link">
                         <img src="assets/logos/logo.svg" alt="ExpenseTracker Logo" class="header__logo">
                         <span class="header__title--sr-only">ExpenseTracker</span>
                     </a>
@@ -88,142 +88,190 @@
     </header>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main main--dashboard">
         <div class="container">
-            <!-- Expense Management Section (Dashboard) -->
-            <section class="expenses">
-                <div class="expenses__header">
-                    <h2 class="expenses__title">Expense Management</h2>
-                    <p class="expenses__subtitle">Add new expenses and track your spending</p>
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="dashboard-header__content">
+                    <h1 class="dashboard-header__title">Dashboard</h1>
+                    <p class="dashboard-header__subtitle">Welcome back! Here's your financial overview</p>
                 </div>
-                
-                <div class="expenses__content">
-                    <!-- Expense Input Form -->
-                    <div class="expense-form">
-                        <div class="expense-form__header">
-                            <h3 class="expense-form__title">Add New Expense</h3>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be dynamically inserted here -->
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="dashboard-grid__left">
+                    <!-- Budget Progress Card -->
+                    <div class="dashboard-card dashboard-card--budget">
+                        <div class="dashboard-card__header">
+                            <h2 class="dashboard-card__title">
+                                <i class="fas fa-wallet"></i>
+                                <span>Budget Progress</span>
+                            </h2>
+                            <a href="settings.html#budgetSection" class="dashboard-card__link">
+                                <i class="fas fa-cog"></i>
+                                <span>Manage</span>
+                            </a>
                         </div>
-                        
-                        <form class="form" id="expenseForm">
-                            <div class="form__group">
-                                <label for="expenseAmount" class="form__label">
-                                    Amount <span class="form__required">*</span>
-                                </label>
-                                <div class="form__input-wrapper">
-                                    <span class="form__currency">$</span>
+                        <div class="dashboard-card__body">
+                            <div class="budget-progress" id="budgetProgressCard">
+                                <!-- Budget progress will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Breakdown Card -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card__header">
+                            <h2 class="dashboard-card__title">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>Category Breakdown</span>
+                            </h2>
+                        </div>
+                        <div class="dashboard-card__body">
+                            <div class="category-breakdown" id="categoryBreakdown">
+                                <!-- Category breakdown will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="dashboard-grid__right">
+                    <!-- Add Expense Card -->
+                    <div class="dashboard-card dashboard-card--form">
+                        <div class="dashboard-card__header">
+                            <h2 class="dashboard-card__title">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add New Expense</span>
+                            </h2>
+                        </div>
+                        <div class="dashboard-card__body">
+                            <form class="form form--compact" id="expenseForm">
+                                <div class="form__group">
+                                    <label for="expenseAmount" class="form__label">
+                                        Amount <span class="form__required">*</span>
+                                    </label>
+                                    <div class="form__input-wrapper">
+                                        <span class="form__currency" id="currencySymbol">$</span>
+                                        <input 
+                                            type="number" 
+                                            id="expenseAmount" 
+                                            name="amount" 
+                                            class="form__input form__input--number" 
+                                            placeholder="0.00"
+                                            step="0.01"
+                                            min="0"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="form__group">
+                                    <label for="expenseDescription" class="form__label">
+                                        Description <span class="form__required">*</span>
+                                    </label>
                                     <input 
-                                        type="number" 
-                                        id="expenseAmount" 
-                                        name="amount" 
-                                        class="form__input form__input--number" 
-                                        placeholder="0.00"
-                                        step="0.01"
-                                        min="0"
+                                        type="text" 
+                                        id="expenseDescription" 
+                                        name="description" 
+                                        class="form__input" 
+                                        placeholder="Enter expense description"
                                         required
                                     >
                                 </div>
-                                <div class="form__error" id="amountError">Please enter a valid amount</div>
-                            </div>
-                            
-                            <div class="form__group">
-                                <label for="expenseDescription" class="form__label">
-                                    Description <span class="form__required">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="expenseDescription" 
-                                    name="description" 
-                                    class="form__input" 
-                                    placeholder="Enter expense description"
-                                    required
-                                >
-                                <div class="form__error" id="descriptionError">Description is required</div>
-                            </div>
-                            
-                            <div class="form__group">
-                                <label for="expenseCategory" class="form__label">
-                                    Category <span class="form__required">*</span>
-                                </label>
-                                <select id="expenseCategory" name="category" class="form__select" required>
-                                    <option value="">Select a category</option>
-                                    <option value="food">🍔 Food & Dining</option>
-                                    <option value="transport">🚗 Transportation</option>
-                                    <option value="entertainment">🎬 Entertainment</option>
-                                    <option value="utilities">⚡ Utilities</option>
-                                    <option value="shopping">🛍️ Shopping</option>
-                                    <option value="healthcare">🏥 Healthcare</option>
-                                    <option value="education">📚 Education</option>
-                                    <option value="other">📋 Other</option>
-                                </select>
-                                <div class="form__error" id="categoryError">Please select a category</div>
-                            </div>
-                            
-                            <div class="form__group">
-                                <label for="expenseDate" class="form__label">
-                                    Date <span class="form__required">*</span>
-                                </label>
-                                <input 
-                                    type="date" 
-                                    id="expenseDate" 
-                                    name="date" 
-                                    class="form__input" 
-                                    required
-                                >
-                                <div class="form__error" id="dateError">Please select a date</div>
-                            </div>
-                            
-                            <div class="form__actions">
-                                <button type="submit" class="btn btn--primary btn--full">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <span>Add Expense</span>
-                                </button>
-                                <button type="button" class="btn btn--secondary btn--full" id="clearFormBtn">
-                                    <i class="fas fa-eraser"></i>
-                                    <span>Clear Form</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Expense List -->
-                    <div class="expense-list">
-                        <div class="expense-list__header">
-                            <h3 class="expense-list__title">Expense History</h3>
-                            <div class="expense-list__filters">
-                                <select class="form__select form__select--small" id="categoryFilter">
-                                    <option value="">All Categories</option>
-                                    <option value="food">Food & Dining</option>
-                                    <option value="transport">Transportation</option>
-                                    <option value="entertainment">Entertainment</option>
-                                    <option value="utilities">Utilities</option>
-                                    <option value="shopping">Shopping</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="education">Education</option>
-                                    <option value="other">Other</option>
-                                </select>
                                 
-                                <input type="date" class="form__input form__input--small" id="dateFilter" placeholder="Filter by date">
-                            </div>
-                        </div>
-                        
-                        <div class="expense-list__content">
-                            <!-- Empty State -->
-                            <div class="expense-list__empty" id="emptyState">
-                                <div class="empty-state">
-                                    <div class="empty-state__icon">📊</div>
-                                    <h4 class="empty-state__title">No expenses yet</h4>
-                                    <p class="empty-state__message">Add your first expense using the form on the left to get started tracking your spending.</p>
+                                <div class="form__group">
+                                    <label for="expenseCategory" class="form__label">
+                                        Category <span class="form__required">*</span>
+                                    </label>
+                                    <select id="expenseCategory" name="category" class="form__select" required>
+                                        <option value="">Select a category</option>
+                                        <option value="food">🍔 Food & Dining</option>
+                                        <option value="transport">🚗 Transportation</option>
+                                        <option value="entertainment">🎬 Entertainment</option>
+                                        <option value="utilities">⚡ Utilities</option>
+                                        <option value="shopping">🛍️ Shopping</option>
+                                        <option value="healthcare">🏥 Healthcare</option>
+                                        <option value="education">📚 Education</option>
+                                        <option value="other">📋 Other</option>
+                                    </select>
                                 </div>
-                            </div>
-                            
-                            <!-- Expense Items -->
-                            <div class="expense-list__items" id="expenseItems">
-                                <!-- Expenses will be dynamically inserted here -->
+                                
+                                <div class="form__group">
+                                    <label for="expenseDate" class="form__label">
+                                        Date <span class="form__required">*</span>
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        id="expenseDate" 
+                                        name="date" 
+                                        class="form__input" 
+                                        required
+                                    >
+                                </div>
+                                
+                                <div class="form__actions">
+                                    <button type="submit" class="btn btn--primary btn--full">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add Expense</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions Card -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card__header">
+                            <h2 class="dashboard-card__title">
+                                <i class="fas fa-history"></i>
+                                <span>Recent Transactions</span>
+                            </h2>
+                        </div>
+                        <div class="dashboard-card__body">
+                            <div class="recent-transactions" id="recentTransactions">
+                                <!-- Recent transactions will be dynamically inserted here -->
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+
+            <!-- All Expenses Section -->
+            <div class="dashboard-card dashboard-card--expanded">
+                <div class="dashboard-card__header">
+                    <h2 class="dashboard-card__title">
+                        <i class="fas fa-list"></i>
+                        <span>All Expenses</span>
+                    </h2>
+                    <div class="dashboard-card__filters">
+                        <select class="form__select form__select--small" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="food">Food & Dining</option>
+                            <option value="transport">Transportation</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <input type="date" class="form__input form__input--small" id="dateFilter" placeholder="Filter by date">
+                    </div>
+                </div>
+                <div class="dashboard-card__body">
+                    <div class="expense-list-full" id="expenseItems">
+                        <!-- All expenses will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -267,11 +315,9 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/navigation.js"></script>
 </body>
 </html>
-

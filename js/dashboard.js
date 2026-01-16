@@ -22,61 +22,24 @@ const Dashboard = {
   initializeDashboard() {
     this.setupEventListeners();
     this.updateMetrics();
-    this.updateSpendingInsights();
     this.updateCategoryBreakdown();
     this.updateRecentTransactions();
     this.updateBudgetProgress();
+    this.updateExpenseList();
     this.updateCurrencySymbol();
   },
 
   // Setup event listeners
   setupEventListeners() {
-    // Floating Action Button
-    const fab = document.getElementById('fabAddExpense');
-    const modal = document.getElementById('addExpenseModal');
-    const closeModalBtns = document.querySelectorAll('#closeModalBtn, #closeModalBtn2, #cancelFormBtn');
-    
-    if (fab && modal) {
-      fab.addEventListener('click', () => {
-        modal.classList.add('modal--open');
-        document.body.classList.add('body--modal-open');
-        // Set today's date as default
-        const dateInput = document.getElementById('expenseDate');
-        if (dateInput) {
-          dateInput.value = new Date().toISOString().split('T')[0];
-        }
-      });
-    }
-
-    closeModalBtns.forEach(btn => {
-      if (btn) {
-        btn.addEventListener('click', () => {
-          if (modal) {
-            modal.classList.remove('modal--open');
-            document.body.classList.remove('body--modal-open');
-          }
-          const form = document.getElementById('expenseForm');
-          if (form) form.reset();
-        });
-      }
-    });
-
-    // Close modal on backdrop click
-    const backdrop = document.getElementById('closeModalBtn');
-    if (backdrop) {
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) {
-          modal.classList.remove('modal--open');
-          document.body.classList.remove('body--modal-open');
-          const form = document.getElementById('expenseForm');
-          if (form) form.reset();
-        }
-      });
-    }
-
-    // Expense form submission (in modal)
+    // Expense form submission (inline form)
     const expenseForm = document.getElementById('expenseForm');
     if (expenseForm) {
+      // Set today's date as default
+      const dateInput = document.getElementById('expenseDate');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+      
       expenseForm.addEventListener('submit', (e) => {
         e.preventDefault();
         this.handleExpenseSubmit(e.target);
@@ -112,25 +75,37 @@ const Dashboard = {
       createdAt: new Date().toISOString()
     };
 
-    if (App.validateExpense(expense)) {
+    if (App.validateExpense && App.validateExpense(expense)) {
       App.addExpense(expense);
-      form.reset();
       
-      // Close modal
-      const modal = document.getElementById('addExpenseModal');
-      if (modal) {
-        modal.classList.remove('modal--open');
-        document.body.classList.remove('body--modal-open');
+      // Reset form and set today's date
+      form.reset();
+      const dateInput = document.getElementById('expenseDate');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
       }
       
       // Update all dashboard components
       this.updateMetrics();
-      this.updateSpendingInsights();
       this.updateCategoryBreakdown();
       this.updateRecentTransactions();
       this.updateBudgetProgress();
       this.updateExpenseList();
       
+      App.showSuccessMessage('Expense added successfully!');
+    } else if (!App.validateExpense) {
+      // Fallback if validateExpense doesn't exist
+      App.addExpense(expense);
+      form.reset();
+      const dateInput = document.getElementById('expenseDate');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+      this.updateMetrics();
+      this.updateCategoryBreakdown();
+      this.updateRecentTransactions();
+      this.updateBudgetProgress();
+      this.updateExpenseList();
       App.showSuccessMessage('Expense added successfully!');
     }
   },
@@ -159,7 +134,15 @@ const Dashboard = {
     const averageDaily = currentDay > 0 ? monthlySpending / currentDay : 0;
     
     // Get budget from settings
-    const budgetSettings = Settings.getBudgetSettings ? Settings.getBudgetSettings() : { monthlyBudget: 3000 };
+    let budgetSettings = { monthlyBudget: 3000 };
+    if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
+      budgetSettings = Settings.getBudgetSettings();
+    } else {
+      try {
+        const budgetData = localStorage.getItem('expenseTrackerBudgetSettings');
+        if (budgetData) budgetSettings = JSON.parse(budgetData);
+      } catch (e) {}
+    }
     const monthlyBudget = budgetSettings.monthlyBudget || 3000;
     const budgetRemaining = Math.max(monthlyBudget - monthlySpending, 0);
 
@@ -208,10 +191,10 @@ const Dashboard = {
     `;
   },
 
-  // Update spending insights
+  // Update spending insights (removed - not in new design)
   updateSpendingInsights() {
-    const insightsContainer = document.getElementById('spendingInsights');
-    if (!insightsContainer) return;
+    // This method is kept for compatibility but not used in new design
+    return;
 
     const expenses = App.getAllExpenses ? App.getAllExpenses() : (App.expenses || []);
     const currentMonth = new Date().getMonth();
@@ -423,7 +406,15 @@ const Dashboard = {
       })
       .reduce((sum, e) => sum + e.amount, 0);
 
-    const budgetSettings = Settings.getBudgetSettings ? Settings.getBudgetSettings() : { monthlyBudget: 3000 };
+    let budgetSettings = { monthlyBudget: 3000 };
+    if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
+      budgetSettings = Settings.getBudgetSettings();
+    } else {
+      try {
+        const budgetData = localStorage.getItem('expenseTrackerBudgetSettings');
+        if (budgetData) budgetSettings = JSON.parse(budgetData);
+      } catch (e) {}
+    }
     const monthlyBudget = budgetSettings.monthlyBudget || 3000;
     const percentage = monthlyBudget > 0 ? Math.min((monthlySpending / monthlyBudget) * 100, 100) : 0;
     const remaining = Math.max(monthlyBudget - monthlySpending, 0);

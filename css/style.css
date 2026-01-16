@@ -3036,3 +3036,590 @@ img {
     flex: 1;
   }
 }
+
+/* ========================================
+   DASHBOARD PAGE STYLES
+   ======================================== */
+
+.main--dashboard {
+  padding: var(--spacing-8) 0 var(--spacing-12);
+  background: var(--color-bg-secondary);
+}
+
+.dashboard-header {
+  margin-bottom: var(--spacing-8);
+}
+
+.dashboard-header__content {
+  text-align: center;
+}
+
+.dashboard-header__title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dashboard-header__subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+}
+
+.metric-card {
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  transition: var(--transition-base);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.metric-card__icon {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.metric-card--primary .metric-card__icon {
+  background: var(--gradient-primary);
+}
+
+.metric-card--success .metric-card__icon {
+  background: var(--gradient-success);
+}
+
+.metric-card--info .metric-card__icon {
+  background: var(--gradient-info);
+}
+
+.metric-card--warning .metric-card__icon {
+  background: var(--gradient-secondary);
+}
+
+.metric-card__content {
+  flex: 1;
+}
+
+.metric-card__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-1);
+  font-weight: var(--font-weight-medium);
+}
+
+.metric-card__value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+}
+
+.dashboard-grid__left,
+.dashboard-grid__right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+/* Dashboard Card */
+.dashboard-card {
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  transition: var(--transition-base);
+}
+
+.dashboard-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card__header {
+  padding: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gradient-soft);
+}
+
+.dashboard-card__title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dashboard-card__title i {
+  color: var(--color-primary);
+}
+
+.dashboard-card__link {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.dashboard-card__link:hover {
+  text-decoration: underline;
+  color: var(--color-primary-600);
+}
+
+.dashboard-card__filters {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.dashboard-card__body {
+  padding: var(--spacing-6);
+}
+
+.dashboard-card--chart .dashboard-card__body {
+  padding: var(--spacing-4);
+}
+
+.dashboard-card--expanded {
+  margin-top: var(--spacing-6);
+}
+
+.dashboard-card--form .dashboard-card__body {
+  padding: var(--spacing-6);
+}
+
+.dashboard-card--budget .dashboard-card__body {
+  padding: var(--spacing-6);
+}
+
+/* Form Compact */
+.form--compact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.form--compact .form__group {
+  margin-bottom: 0;
+}
+
+/* Budget Progress Card */
+.budget-progress-card {
+  padding: var(--spacing-4);
+}
+
+.budget-progress-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.budget-progress-card__info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.budget-progress-card__spent {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+}
+
+.budget-progress-card__separator {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-lg);
+}
+
+.budget-progress-card__total {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.budget-progress-card__percentage {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-family: var(--font-family-heading);
+}
+
+.budget-progress-card__bar {
+  height: 16px;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--spacing-3);
+}
+
+.budget-progress-card__progress {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.budget-progress-card__progress--over {
+  background: var(--gradient-secondary);
+}
+
+.budget-progress-card__footer {
+  text-align: center;
+}
+
+.budget-progress-card__remaining {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-success);
+}
+
+.budget-progress-card__remaining--over {
+  color: var(--color-error);
+}
+
+/* Category Breakdown */
+.category-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.category-breakdown-item {
+  padding: var(--spacing-3);
+}
+
+.category-breakdown-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.category-breakdown-item__info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.category-breakdown-item__icon {
+  font-size: var(--font-size-lg);
+}
+
+.category-breakdown-item__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.category-breakdown-item__amount {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.category-breakdown-item__progress {
+  height: 8px;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--spacing-1);
+}
+
+.category-breakdown-item__progress-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.category-breakdown-item__percentage {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Recent Transactions */
+.recent-transactions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-base);
+}
+
+.transaction-item:hover {
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.transaction-item__icon {
+  font-size: var(--font-size-xl);
+  flex-shrink: 0;
+}
+
+.transaction-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-item__description {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transaction-item__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.transaction-item__amount {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+/* Expense List Full */
+.expense-list-full {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.expense-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-base);
+}
+
+.expense-item:hover {
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.expense-item__icon {
+  font-size: var(--font-size-xl);
+  flex-shrink: 0;
+}
+
+.expense-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.expense-item__description {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.expense-item__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.expense-item__amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.expense-item__actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+.expense-item__action {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-medium);
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+.expense-item__action:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-primary-200);
+  color: var(--color-primary);
+}
+
+.expense-item__action--delete:hover {
+  background: var(--color-error-50);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* Reports Page */
+.main--reports {
+  padding: var(--spacing-8) 0 var(--spacing-12);
+  background: var(--color-bg-secondary);
+}
+
+.reports-header {
+  margin-bottom: var(--spacing-8);
+}
+
+.reports-header__content {
+  text-align: center;
+}
+
+.reports-header__title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.reports-header__subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-6);
+}
+
+/* Category Comparison */
+.category-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Spending Trends */
+.spending-trends {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Responsive Dashboard */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main--dashboard,
+  .main--reports {
+    padding: var(--spacing-6) 0 var(--spacing-8);
+  }
+
+  .dashboard-header__title,
+  .reports-header__title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+
+  .metric-card {
+    padding: var(--spacing-4);
+  }
+
+  .metric-card__icon {
+    width: 48px;
+    height: 48px;
+    font-size: var(--font-size-xl);
+  }
+
+  .metric-card__value {
+    font-size: var(--font-size-xl);
+  }
+
+  .dashboard-card__header {
+    padding: var(--spacing-4);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .dashboard-card__body {
+    padding: var(--spacing-4);
+  }
+
+  .dashboard-card__filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+}
