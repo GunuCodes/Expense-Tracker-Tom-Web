@@ -74,6 +74,10 @@ const Dashboard = {
     form.setAttribute('data-submitting', 'true');
     
     try {
+      const modal = document.getElementById('addExpenseModal');
+      const isEditMode = modal && modal.getAttribute('data-edit-mode') === 'true';
+      const expenseId = modal ? modal.getAttribute('data-edit-expense-id') : null;
+      
       const formData = new FormData(form);
       const expense = {
         amount: parseFloat(formData.get('amount')),
@@ -82,35 +86,52 @@ const Dashboard = {
         date: formData.get('date')
       };
 
-      if (App.validateExpense && App.validateExpense(expense)) {
-        await App.addExpense(expense);
+      // Validate
+      if (App.validateExpense && !App.validateExpense(expense)) {
+        form.removeAttribute('data-submitting');
+        return;
+      }
+
+      if (isEditMode && expenseId) {
+        // Update existing expense
+        await App.updateExpense(expenseId, expense);
         
-        // Reset form and set today's date
-        form.reset();
-        const dateInput = document.getElementById('expenseDate');
-        if (dateInput) {
-          dateInput.value = new Date().toISOString().split('T')[0];
+        // Reset edit mode
+        if (modal) {
+          modal.removeAttribute('data-edit-expense-id');
+          modal.removeAttribute('data-edit-mode');
         }
         
-        // Update all dashboard components
-        this.updateMetrics();
-        this.updateCategoryBreakdown();
-        this.updateRecentTransactions();
-        this.updateBudgetProgress();
-        this.updateExpenseList();
-      } else if (!App.validateExpense) {
-        // Fallback if validateExpense doesn't exist
-        await App.addExpense(expense);
-        form.reset();
-        const dateInput = document.getElementById('expenseDate');
-        if (dateInput) {
-          dateInput.value = new Date().toISOString().split('T')[0];
+        // Close modal
+        if (modal) {
+          modal.classList.remove('modal--open');
+          document.body.classList.remove('body--modal-open');
         }
-        this.updateMetrics();
+        
+        App.showSuccessMessage('Expense updated successfully!');
+      } else {
+        // Add new expense
+        await App.addExpense(expense);
+      }
+      
+      // Reset form and set today's date
+      form.reset();
+      const dateInput = document.getElementById('expenseDate');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+      
+      // Update all dashboard components
+      this.updateMetrics();
       this.updateCategoryBreakdown();
       this.updateRecentTransactions();
       this.updateBudgetProgress();
       this.updateExpenseList();
+    } catch (error) {
+      console.error('Error submitting expense:', error);
+      App.showError(error.message || 'Failed to save expense');
+    } finally {
+      form.removeAttribute('data-submitting');
     }
   },
 
@@ -594,6 +615,7 @@ const Dashboard = {
     );
     if (!expense) {
       console.error('Expense not found with id:', id);
+      App.showError('Expense not found');
       return;
     }
 
@@ -601,51 +623,33 @@ const Dashboard = {
     const modal = document.getElementById('addExpenseModal');
     const form = document.getElementById('expenseForm');
     
-    if (modal && form) {
-      document.getElementById('expenseAmount').value = expense.amount;
-      document.getElementById('expenseDescription').value = expense.description;
-      document.getElementById('expenseCategory').value = expense.category;
-      document.getElementById('expenseDate').value = expense.date;
-      
-      modal.classList.add('modal--open');
-      document.body.classList.add('body--modal-open');
-
-      // Store the expense ID for update
-      const expenseId = expense._id || expense.id;
-      
-      // Remove existing listener and add new one
-      const newForm = form.cloneNode(true);
-      form.parentNode.replaceChild(newForm, form);
-      const updatedForm = document.getElementById('expenseForm');
-      
-      updatedForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const formData = new FormData(updatedForm);
-        const updatedData = {
-          amount: parseFloat(formData.get('amount')),
-          description: formData.get('description'),
-          category: formData.get('category'),
-          date: formData.get('date')
-        };
-        
-        await App.updateExpense(expenseId, updatedData);
-        updatedForm.reset();
-        modal.classList.remove('modal--open');
-        document.body.classList.remove('body--modal-open');
-        
-        // Update all components
-        this.updateMetrics();
-        this.updateSpendingInsights();
-        this.updateCategoryBreakdown();
-        this.updateRecentTransactions();
-        this.updateBudgetProgress();
-        this.updateExpenseList();
-        
-        App.showSuccessMessage('Expense updated successfully!');
-      });
+    if (!modal || !form) {
+      console.error('Modal or form not found');
+      return;
     }
+
+    // Store the expense ID for update
+    const expenseId = expense._id || expense.id;
+    modal.setAttribute('data-edit-expense-id', expenseId);
+    modal.setAttribute('data-edit-mode', 'true');
+    
+    // Populate form fields - use the correct field IDs
+    const amountInput = document.getElementById('expenseAmount');
+    const descriptionInput = document.getElementById('expenseDescription');
+    const categorySelect = document.getElementById('expenseCategory');
+    const dateInput = document.getElementById('expenseDate');
+    
+    if (amountInput) amountInput.value = expense.amount;
+    if (descriptionInput) descriptionInput.value = expense.description;
+    if (categorySelect) categorySelect.value = expense.category;
+    if (dateInput) {
+      // Format date for input (YYYY-MM-DD)
+      const date = new Date(expense.date);
+      dateInput.value = date.toISOString().split('T')[0];
+    }
+    
+    modal.classList.add('modal--open');
+    document.body.classList.add('body--modal-open');
   },
 
   // Get currency symbol from settings

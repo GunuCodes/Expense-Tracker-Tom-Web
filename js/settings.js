@@ -306,21 +306,22 @@ const Settings = {
 
     // Get profile picture if it was uploaded
     const profilePicturePreview = document.getElementById('profilePicturePreview');
-    let profilePicture = null;
+    let profilePicture = undefined; // Use undefined to distinguish from null (null = clear, undefined = don't change)
     
     if (profilePicturePreview) {
       // Get from data attribute first, then fall back to src
-      const pictureSrc = profilePicturePreview.getAttribute('data-profile-picture') || profilePicturePreview.src;
+      const pictureSrc = profilePicturePreview.getAttribute('data-profile-picture');
       
-      // Only save if it's not the default avatar and is a valid image data URL
+      // Only save if it's a valid image data URL (not default avatar)
       if (pictureSrc && 
           !pictureSrc.includes('default-avatar.svg') && 
-          (pictureSrc.startsWith('data:image/') || pictureSrc.startsWith('blob:'))) {
+          pictureSrc.startsWith('data:image/')) {
         profilePicture = pictureSrc;
       } else if (pictureSrc && pictureSrc.includes('default-avatar.svg')) {
         // If user wants to reset to default, clear the profile picture
         profilePicture = null;
       }
+      // If pictureSrc is not set or is undefined, profilePicture stays undefined (don't change)
     }
 
     // Update profile using API
@@ -329,6 +330,7 @@ const Settings = {
         const profileData = {
           name: displayName
         };
+        // Only include profilePicture if it was actually changed
         if (profilePicture !== undefined) {
           profileData.profilePicture = profilePicture;
         }
@@ -530,10 +532,14 @@ const Settings = {
     reader.onload = (e) => {
       const preview = document.getElementById('profilePicturePreview');
       if (preview) {
-        // Store the data URL directly - this will be saved when form is submitted
-        preview.src = e.target.result;
-        // Store in a data attribute for easy retrieval
-        preview.setAttribute('data-profile-picture', e.target.result);
+        const dataUrl = e.target.result;
+        // Store the data URL in both src (for preview) and data attribute (for saving)
+        preview.src = dataUrl;
+        // CRITICAL: Store in data attribute - this is what gets read when form is submitted
+        preview.setAttribute('data-profile-picture', dataUrl);
+        console.log('Profile picture preview updated, data attribute set:', dataUrl.substring(0, 50) + '...');
+      } else {
+        console.error('Profile picture preview element not found');
       }
     };
     reader.onerror = () => {
