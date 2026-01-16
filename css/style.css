@@ -1328,6 +1328,28 @@ body:has(.hero) .main {
   overflow: hidden;
 }
 
+/* Force modals to always be light mode regardless of theme */
+.modal,
+.modal * {
+  color-scheme: light !important;
+}
+
+.modal__content {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+}
+
+.modal__title,
+.modal__subtitle,
+.modal__body,
+.modal__footer {
+  color: #1a1a1a !important;
+}
+
+.modal__backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
 .modal__content::before {
   content: '';
   position: absolute;

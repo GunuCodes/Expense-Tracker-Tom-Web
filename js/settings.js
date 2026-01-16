@@ -379,7 +379,20 @@ const Settings = {
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      App.showError(error.message || 'Failed to update profile. Please try again.');
+      // Handle error object properly
+      let errorMessage = 'Failed to update profile. Please try again.';
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.error) {
+          errorMessage = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+        } else {
+          errorMessage = JSON.stringify(error);
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      App.showError(errorMessage);
     }
   },
 
@@ -395,15 +408,38 @@ const Settings = {
 
     try {
       if (typeof API !== 'undefined' && API.updateBudget) {
-        await API.updateBudget({ monthlyBudget });
+        const response = await API.updateBudget({ monthlyBudget });
+        
+        if (!response) {
+          throw new Error('Failed to update budget');
+        }
+        
+        // Update App.budgetSettings so dashboard can read it
+        if (typeof App !== 'undefined') {
+          App.budgetSettings = {
+            monthlyBudget: response.monthlyBudget || monthlyBudget
+          };
+        }
+        
+        // Reload budget settings to ensure sync
+        await this.loadUserSettings();
+        
         App.showSuccessMessage('Budget settings saved successfully!');
         this.updateBudgetVisual();
         
         // Update dashboard if on dashboard page
-        if (typeof Dashboard !== 'undefined' && Dashboard.updateBudgetProgress) {
-          Dashboard.updateBudgetProgress();
-          Dashboard.updateMetrics();
+        if (typeof Dashboard !== 'undefined') {
+          if (Dashboard.updateBudgetProgress) {
+            Dashboard.updateBudgetProgress();
+          }
+          if (Dashboard.updateMetrics) {
+            Dashboard.updateMetrics();
+          }
+          // Force refresh of currency symbol
+          if (Dashboard.updateCurrencySymbol) {
+            Dashboard.updateCurrencySymbol();
       }
+        }
       } else {
         // Fallback to localStorage
     const budgetSettings = {
@@ -421,25 +457,63 @@ const Settings = {
       }
     } else {
       App.showError('Failed to save budget settings');
-        }
+    }
       }
     } catch (error) {
       console.error('Error updating budget:', error);
-      App.showError(error.message || 'Failed to save budget settings');
+      // Handle error object properly
+      let errorMessage = 'Failed to save budget settings';
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.error) {
+          errorMessage = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+        } else {
+          errorMessage = JSON.stringify(error);
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      App.showError(errorMessage);
     }
   },
 
   // Handle preferences form submission (using API)
   async handlePreferencesSubmit(form) {
     const formData = new FormData(form);
+    const theme = formData.get('theme');
+    const currency = formData.get('currency');
+    
+    if (!theme || !currency) {
+      App.showError('Please select both theme and currency');
+      return;
+    }
+    
     const settings = {
-      theme: formData.get('theme'),
-      currency: formData.get('currency')
+      theme: theme,
+      currency: currency
     };
 
     try {
       if (typeof API !== 'undefined' && API.updateSettings) {
-        await API.updateSettings(settings);
+        const response = await API.updateSettings(settings);
+        
+        if (!response) {
+          throw new Error('Failed to update settings');
+        }
+        
+        // Update App.settings so dashboard can read it immediately
+        if (typeof App !== 'undefined') {
+          App.settings = {
+            ...App.settings,
+            theme: response.theme || settings.theme,
+            currency: response.currency || settings.currency
+          };
+        }
+        
+        // Reload settings to ensure sync
+        await this.loadUserSettings();
+        
         App.showSuccessMessage('Preferences saved successfully!');
         
         // Apply theme if changed
@@ -448,7 +522,7 @@ const Settings = {
           
           // Also update App settings for persistence
           if (typeof App !== 'undefined' && App.applySettings) {
-            App.applySettings();
+            await App.applySettings();
           }
           
           // Update charts if on reports page
@@ -461,11 +535,23 @@ const Settings = {
         // Update currency symbol across pages
         this.updateCurrencySymbol();
         
-        // Reload dashboard if on dashboard page
-        if (typeof Dashboard !== 'undefined' && Dashboard.updateCurrencySymbol) {
-          Dashboard.updateCurrencySymbol();
-          Dashboard.updateMetrics();
-          Dashboard.updateBudgetProgress();
+        // Reload dashboard if on dashboard page - force full refresh
+        if (typeof Dashboard !== 'undefined') {
+          if (Dashboard.updateCurrencySymbol) {
+            Dashboard.updateCurrencySymbol();
+          }
+          if (Dashboard.updateMetrics) {
+            Dashboard.updateMetrics();
+          }
+          if (Dashboard.updateBudgetProgress) {
+            Dashboard.updateBudgetProgress();
+          }
+          if (Dashboard.updateCategoryBreakdown) {
+            Dashboard.updateCategoryBreakdown();
+          }
+          if (Dashboard.updateRecentTransactions) {
+            Dashboard.updateRecentTransactions();
+          }
         }
       } else {
         // Fallback to localStorage
@@ -501,7 +587,20 @@ const Settings = {
       }
     } catch (error) {
       console.error('Error updating preferences:', error);
-      App.showError(error.message || 'Failed to save preferences');
+      // Handle error object properly
+      let errorMessage = 'Failed to save preferences';
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.error) {
+          errorMessage = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+        } else {
+          errorMessage = JSON.stringify(error);
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      App.showError(errorMessage);
     }
   },
 

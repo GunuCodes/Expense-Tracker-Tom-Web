@@ -36,10 +36,10 @@ const Auth = {
           const response = await API.verifyToken();
           if (response && response.user) {
             this.currentUser = response.user;
-            this.isAuthenticated = true;
+        this.isAuthenticated = true;
             // Update stored user data
             localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
-            return true;
+          return true;
           }
         } catch (error) {
           console.log('Token verification failed, clearing auth:', error);
@@ -55,8 +55,8 @@ const Auth = {
       }
 
       // No valid session
-      this.currentUser = null;
-      this.isAuthenticated = false;
+        this.currentUser = null;
+        this.isAuthenticated = false;
       // Force light mode for logged out users
       if (typeof App !== 'undefined' && App.applySettings) {
         App.applySettings();
@@ -113,7 +113,7 @@ const Auth = {
     if (this.requiresAdmin(currentPage) && (!isAuth || !this.isAdmin())) {
       // Admin page but user is not admin - redirect to dashboard
       if (typeof App !== 'undefined' && App.showError) {
-        App.showError('Access denied. Admin privileges required.');
+      App.showError('Access denied. Admin privileges required.');
       }
       setTimeout(() => {
         window.location.href = 'dashboard.html';

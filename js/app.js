@@ -8,6 +8,7 @@ const App = {
   currentView: 'expenses',
   expenses: [],
   currentUser: null,
+  budgetSettings: { monthlyBudget: 3000 }, // Store budget settings from API
   
   // Initialize the application
   async init() {
@@ -865,6 +866,23 @@ const App = {
         this.applySettings();
       }
       
+      // Load budget from API
+      if (typeof API !== 'undefined' && API.getBudget) {
+        try {
+          const budgetData = await API.getBudget();
+          this.budgetSettings = {
+            monthlyBudget: budgetData.monthlyBudget || 3000
+          };
+        } catch (error) {
+          console.error('Error loading budget from API:', error);
+          // Fallback to default
+          this.budgetSettings = { monthlyBudget: 3000 };
+        }
+      } else {
+        // Fallback to default
+        this.budgetSettings = { monthlyBudget: 3000 };
+      }
+      
       this.updateExpenseList();
       console.log('Data loaded successfully:', {
         expenses: this.expenses.length,
@@ -1199,20 +1217,33 @@ const App = {
   async updateExpense(id, updatedData) {
     try {
       if (typeof API !== 'undefined' && API.updateExpense) {
-        const updatedExpense = await API.updateExpense(id, updatedData);
+        // Convert id to string for comparison
+        const idStr = String(id);
+        const updatedExpense = await API.updateExpense(idStr, updatedData);
         
-        // Update local array
-        const index = this.expenses.findIndex(expense => 
-          expense.id === id || expense._id === id || expense.id === updatedExpense._id
-        );
+        if (!updatedExpense) {
+          throw new Error('Failed to update expense');
+        }
+        
+        // Update local array - handle both _id and id formats
+        const index = this.expenses.findIndex(expense => {
+          const expenseId = String(expense._id || expense.id);
+          const updatedId = String(updatedExpense._id || updatedExpense.id);
+          return expenseId === idStr || expenseId === updatedId;
+        });
+        
         if (index !== -1) {
           this.expenses[index] = {
+            ...this.expenses[index],
+            ...updatedExpense,
             id: updatedExpense._id || updatedExpense.id,
-            ...updatedExpense
+            _id: updatedExpense._id
           };
         } else {
+          // If not found, add it
           this.expenses.push({
             id: updatedExpense._id || updatedExpense.id,
+            _id: updatedExpense._id,
             ...updatedExpense
           });
         }

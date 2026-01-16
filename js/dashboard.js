@@ -78,11 +78,11 @@ const Dashboard = {
       const isEditMode = modal && modal.getAttribute('data-edit-mode') === 'true';
       const expenseId = modal ? modal.getAttribute('data-edit-expense-id') : null;
       
-      const formData = new FormData(form);
-      const expense = {
-        amount: parseFloat(formData.get('amount')),
-        description: formData.get('description'),
-        category: formData.get('category'),
+    const formData = new FormData(form);
+    const expense = {
+      amount: parseFloat(formData.get('amount')),
+      description: formData.get('description'),
+      category: formData.get('category'),
         date: formData.get('date')
       };
 
@@ -158,9 +158,13 @@ const Dashboard = {
     
     const averageDaily = currentDay > 0 ? monthlySpending / currentDay : 0;
     
-    // Get budget from settings
+    // Get budget from API via App.budgetSettings
     let budgetSettings = { monthlyBudget: 3000 };
-    if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
+    
+    // Try to get from App.budgetSettings first (loaded from API)
+    if (typeof App !== 'undefined' && App.budgetSettings && App.budgetSettings.monthlyBudget) {
+      budgetSettings = App.budgetSettings;
+    } else if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
       budgetSettings = Settings.getBudgetSettings();
     } else {
       try {
@@ -431,8 +435,13 @@ const Dashboard = {
       })
       .reduce((sum, e) => sum + e.amount, 0);
 
+    // Get budget from API via App.budgetSettings
     let budgetSettings = { monthlyBudget: 3000 };
-    if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
+    
+    // Try to get from App.budgetSettings first (loaded from API)
+    if (typeof App !== 'undefined' && App.budgetSettings && App.budgetSettings.monthlyBudget) {
+      budgetSettings = App.budgetSettings;
+    } else if (typeof Settings !== 'undefined' && Settings.getBudgetSettings) {
       budgetSettings = Settings.getBudgetSettings();
     } else {
       try {
@@ -628,8 +637,8 @@ const Dashboard = {
       return;
     }
 
-    // Store the expense ID for update
-    const expenseId = expense._id || expense.id;
+    // Store the expense ID for update - ensure it's a string
+    const expenseId = String(expense._id || expense.id);
     modal.setAttribute('data-edit-expense-id', expenseId);
     modal.setAttribute('data-edit-mode', 'true');
     
@@ -647,15 +656,27 @@ const Dashboard = {
       const date = new Date(expense.date);
       dateInput.value = date.toISOString().split('T')[0];
     }
-    
-    modal.classList.add('modal--open');
-    document.body.classList.add('body--modal-open');
+      
+      modal.classList.add('modal--open');
+      document.body.classList.add('body--modal-open');
   },
 
-  // Get currency symbol from settings
+  // Get currency symbol from settings (read from API via App.settings)
   getCurrencySymbol() {
+    // First try to get from App.settings (loaded from API)
+    let currency = 'USD';
+    if (typeof App !== 'undefined' && App.settings && App.settings.currency) {
+      currency = App.settings.currency;
+    } else if (typeof API !== 'undefined' && API.getSettings) {
+      // If App.settings not available, try to get from API directly
+      // But this is async, so we'll use a fallback
+      const settings = App.getFromStorage ? App.getFromStorage(App.STORAGE_KEYS.SETTINGS) : null;
+      currency = settings?.currency || 'USD';
+    } else {
+      // Fallback to localStorage
     const settings = App.getFromStorage ? App.getFromStorage(App.STORAGE_KEYS.SETTINGS) : null;
-    const currency = settings?.currency || 'USD';
+      currency = settings?.currency || 'USD';
+    }
     
     const symbols = {
       USD: '$',
