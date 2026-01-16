@@ -7,10 +7,12 @@
 const App = {
   currentView: 'expenses',
   expenses: [],
+  currentUser: null,
   
   // Initialize the application
   init() {
     console.log('Expense Tracker App initialized');
+    this.checkAuthState();
     this.initializeViews();
     this.setupEventListeners();
     this.loadData();
@@ -97,21 +99,26 @@ const App = {
       dateFilter.addEventListener('change', this.filterExpenses.bind(this));
     }
 
-    // Modal buttons
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
+    // Modal buttons (only if user is not logged in)
+    // If logged in, buttons are created by updateAuthUI()
+    if (!this.currentUser) {
+      const loginBtn = document.getElementById('loginBtn');
+      const signupBtn = document.getElementById('signupBtn');
+
+      if (loginBtn) {
+        loginBtn.addEventListener('click', () => this.openModal('login'));
+      }
+
+      if (signupBtn) {
+        signupBtn.addEventListener('click', () => this.openModal('signup'));
+      }
+    }
+    
+    // Modal close buttons and switchers
     const closeLoginBtn = document.getElementById('closeLoginBtn');
     const closeSignupBtn = document.getElementById('closeSignupBtn');
     const switchToSignup = document.getElementById('switchToSignup');
     const switchToLogin = document.getElementById('switchToLogin');
-
-    if (loginBtn) {
-      loginBtn.addEventListener('click', () => this.openModal('login'));
-    }
-
-    if (signupBtn) {
-      signupBtn.addEventListener('click', () => this.openModal('signup'));
-    }
 
     if (closeLoginBtn) {
       closeLoginBtn.addEventListener('click', () => this.closeModal('login'));
@@ -172,18 +179,14 @@ const App = {
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        // Frontend only - just close the modal for now
-        this.showSuccessMessage('Login functionality coming soon!');
-        this.closeModal('login');
+        this.handleLogin(e.target);
       });
     }
 
     if (signupForm) {
       signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        // Frontend only - just close the modal for now
-        this.showSuccessMessage('Sign up functionality coming soon!');
-        this.closeModal('signup');
+        this.handleSignup(e.target);
       });
     }
   },
@@ -799,7 +802,9 @@ const App = {
   STORAGE_KEYS: {
     EXPENSES: 'expenseTrackerExpenses',
     CATEGORIES: 'expenseTrackerCategories',
-    SETTINGS: 'expenseTrackerSettings'
+    SETTINGS: 'expenseTrackerSettings',
+    USERS: 'expenseTrackerUsers',
+    CURRENT_USER: 'expenseTrackerCurrentUser'
   },
 
   // Default categories
@@ -1212,14 +1217,237 @@ const App = {
     if (modal) {
       modal.classList.remove('modal--open');
       
+      // Clear any messages in the modal
+      const messageEl = modal.querySelector('.modal__message');
+      if (messageEl) {
+        messageEl.classList.remove('modal__message--show', 'modal__message--success', 'modal__message--error');
+        messageEl.textContent = '';
+      }
+      
       // Check if any other modal is open
       const loginModal = document.getElementById('loginModal');
       const signupModal = document.getElementById('signupModal');
+      const deleteModal = document.getElementById('deleteModal');
       const anyModalOpen = (loginModal && loginModal.classList.contains('modal--open')) ||
-                          (signupModal && signupModal.classList.contains('modal--open'));
+                          (signupModal && signupModal.classList.contains('modal--open')) ||
+                          (deleteModal && deleteModal.classList.contains('modal--open'));
       
       if (!anyModalOpen) {
         document.body.classList.remove('body--modal-open');
+      }
+    }
+  },
+
+  // ========================================
+  // AUTHENTICATION
+  // ========================================
+
+  // Check authentication state on load
+  checkAuthState() {
+    const savedUser = this.getFromStorage(this.STORAGE_KEYS.CURRENT_USER);
+    if (savedUser) {
+      this.currentUser = savedUser;
+      this.updateAuthUI();
+    }
+  },
+
+  // Show message in modal
+  showModalMessage(modalType, message, type) {
+    const modalId = modalType === 'login' ? 'loginModal' : 'signupModal';
+    const modal = document.getElementById(modalId);
+    const messageEl = modal ? modal.querySelector('.modal__message') : null;
+    
+    if (messageEl) {
+      messageEl.textContent = message;
+      messageEl.className = `modal__message modal__message--show modal__message--${type}`;
+      
+      // Auto-hide success messages after 3 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          messageEl.classList.remove('modal__message--show');
+          setTimeout(() => {
+            messageEl.textContent = '';
+            messageEl.className = 'modal__message';
+          }, 300);
+        }, 3000);
+      }
+    }
+  },
+
+  // Handle signup
+  handleSignup(form) {
+    const formData = new FormData(form);
+    const name = formData.get('name').trim();
+    const email = formData.get('email').trim().toLowerCase();
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    const terms = formData.get('terms');
+
+    // Clear previous messages
+    this.showModalMessage('signup', '', 'success');
+
+    // Validation
+    if (!name || name.length < 2) {
+      this.showModalMessage('signup', 'Please enter your full name (at least 2 characters)', 'error');
+      return;
+    }
+
+    if (!email || !this.validateEmail(email)) {
+      this.showModalMessage('signup', 'Please enter a valid email address', 'error');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      this.showModalMessage('signup', 'Password must be at least 6 characters long', 'error');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      this.showModalMessage('signup', 'Passwords do not match', 'error');
+      return;
+    }
+
+    if (!terms) {
+      this.showModalMessage('signup', 'Please agree to the Terms of Service and Privacy Policy', 'error');
+      return;
+    }
+
+    // Check if user already exists
+    const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
+    const existingUser = users.find(user => user.email === email);
+    
+    if (existingUser) {
+      this.showModalMessage('signup', 'An account with this email already exists. Please login instead.', 'error');
+      return;
+    }
+
+    // Create new user
+    const newUser = {
+      id: Date.now(),
+      name: name,
+      email: email,
+      password: password, // In production, this should be hashed
+      createdAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    this.setToStorage(this.STORAGE_KEYS.USERS, users);
+
+    // Auto-login after signup
+    this.currentUser = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email
+    };
+    this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
+
+    this.showModalMessage('signup', `Welcome, ${name}! Your account has been created successfully.`, 'success');
+    
+    // Close modal and update UI after short delay
+    setTimeout(() => {
+      this.closeModal('signup');
+      this.updateAuthUI();
+      form.reset();
+    }, 1500);
+  },
+
+  // Handle login
+  handleLogin(form) {
+    const formData = new FormData(form);
+    const email = formData.get('email').trim().toLowerCase();
+    const password = formData.get('password');
+    const remember = formData.get('remember');
+
+    // Clear previous messages
+    this.showModalMessage('login', '', 'success');
+
+    // Validation
+    if (!email || !this.validateEmail(email)) {
+      this.showModalMessage('login', 'Please enter a valid email address', 'error');
+      return;
+    }
+
+    if (!password) {
+      this.showModalMessage('login', 'Please enter your password', 'error');
+      return;
+    }
+
+    // Check credentials
+    const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (!user) {
+      this.showModalMessage('login', 'Invalid email or password. Please try again.', 'error');
+      return;
+    }
+
+    // Set current user
+    this.currentUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+    this.setToStorage(this.STORAGE_KEYS.CURRENT_USER, this.currentUser);
+
+    this.showModalMessage('login', `Welcome back, ${user.name}!`, 'success');
+    
+    // Close modal and update UI after short delay
+    setTimeout(() => {
+      this.closeModal('login');
+      this.updateAuthUI();
+      form.reset();
+    }, 1500);
+  },
+
+  // Handle logout
+  handleLogout() {
+    this.currentUser = null;
+    localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+    this.updateAuthUI();
+    this.showSuccessMessage('You have been logged out successfully.');
+  },
+
+  // Validate email format
+  validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  },
+
+  // Update authentication UI
+  updateAuthUI() {
+    const authSection = document.querySelector('.header__auth');
+    if (!authSection) return;
+
+    if (this.currentUser) {
+      // Show logged-in state
+      authSection.innerHTML = `
+        <div class="header__user-info">
+          <span class="user__name">${this.currentUser.name}</span>
+        </div>
+        <button class="btn-auth btn-auth--logout" id="logoutBtn">Logout</button>
+      `;
+
+      // Add logout event listener
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => this.handleLogout());
+      }
+    } else {
+      // Show login/signup buttons
+      authSection.innerHTML = `
+        <button class="btn-auth btn-auth--login" id="loginBtn">Login</button>
+        <button class="btn-auth btn-auth--signup" id="signupBtn">Sign Up</button>
+      `;
+
+      // Re-attach event listeners
+      const loginBtn = document.getElementById('loginBtn');
+      const signupBtn = document.getElementById('signupBtn');
+      
+      if (loginBtn) {
+        loginBtn.addEventListener('click', () => this.openModal('login'));
+      }
+      if (signupBtn) {
+        signupBtn.addEventListener('click', () => this.openModal('signup'));
       }
     }
   }

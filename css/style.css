@@ -224,6 +224,30 @@ ol {
   box-shadow: var(--shadow-sm);
 }
 
+.btn-auth--logout {
+  color: var(--color-gray-700);
+  background-color: transparent;
+  border-color: var(--color-gray-300);
+}
+
+.btn-auth--logout:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background-color: var(--color-gray-50);
+}
+
+.header__user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.header__user-info .user__name {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  font-size: var(--font-size-sm);
+}
+
 .header__menu-toggle {
   display: flex;
   flex-direction: column;
@@ -887,6 +911,32 @@ ol {
   color: var(--color-gray-600);
 }
 
+.modal__message {
+  margin: 0 var(--spacing-6) var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: none;
+  animation: slideDown 0.3s ease-out;
+}
+
+.modal__message--show {
+  display: block;
+}
+
+.modal__message--success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.modal__message--error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
 .modal__form {
   padding: var(--spacing-6);
 }
@@ -1304,6 +1354,10 @@ ol {
     gap: var(--spacing-3);
   }
   
+  .header__user-info {
+    display: flex;
+  }
+  
   .modal__content {
     max-width: 480px;
   }
@@ -1337,6 +1391,10 @@ ol {
   .btn-auth {
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-xs);
+  }
+  
+  .header__user-info {
+    display: none; /* Hide name on mobile, just show logout button */
   }
   
   .modal__content {
