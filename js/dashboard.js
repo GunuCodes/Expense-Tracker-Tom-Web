@@ -1,12 +1,17 @@
 /**
  * Dashboard JavaScript
+<<<<<<< HEAD
  * Handles all dashboard page functionality
+=======
+ * Personal Expense Tracker
+>>>>>>> cc54dbd39010b90374a407c67d1349cd92c1af43
  */
 
 const Dashboard = {
   // Initialize dashboard
   init() {
     console.log('Dashboard initialized');
+<<<<<<< HEAD
     
     // Wait for App data to load
     if (App.expenses && App.expenses.length > 0) {
@@ -684,3 +689,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   }
 });
+=======
+    this.updateSummaryCards();
+    this.setupDashboardEvents();
+  },
+
+  // Update summary cards with data
+  updateSummaryCards() {
+    const summaryCards = document.querySelectorAll('.summary-card__amount');
+    
+    // Mock data - replace with real data later
+    const mockData = {
+      totalExpenses: '$2,450.75',
+      thisMonth: '$485.30',
+      budget: '$3,000.00'
+    };
+
+    if (summaryCards.length >= 3) {
+      summaryCards[0].textContent = mockData.totalExpenses;
+      summaryCards[1].textContent = mockData.thisMonth;
+      summaryCards[2].textContent = mockData.budget;
+    }
+  },
+
+  // Setup dashboard-specific event listeners
+  setupDashboardEvents() {
+    // Add any dashboard-specific event listeners here
+    console.log('Dashboard events setup complete');
+  },
+
+  // Calculate budget progress
+  calculateBudgetProgress() {
+    // Budget calculation logic will be implemented here
+    console.log('Calculating budget progress...');
+  },
+
+  // Update dashboard data
+  updateDashboard() {
+    this.updateSummaryCards();
+    this.calculateBudgetProgress();
+  }
+};
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Dashboard;
+}
+>>>>>>> cc54dbd39010b90374a407c67d1349cd92c1af43

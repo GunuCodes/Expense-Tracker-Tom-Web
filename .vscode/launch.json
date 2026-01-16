@@ -8,7 +8,11 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open index.html",
+<<<<<<< HEAD
             "file": "c:\\Users\\carlo\\Documents\\the\\Expense Tracker - Copy\\index.html"
+=======
+            "file": "c:\\Users\\carlo\\Documents\\the\\Expense Tracker\\index.html"
+>>>>>>> cc54dbd39010b90374a407c67d1349cd92c1af43
         }
     ]
 }
