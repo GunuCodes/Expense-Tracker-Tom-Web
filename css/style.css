@@ -4237,6 +4237,130 @@ img {
   color: var(--color-text-secondary);
 }
 
+/* Title Cards - Fix text contrast in dark mode */
+[data-theme="dark"] .dashboard-card__header {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="dark"] .dashboard-card__title,
+[data-theme="dark"] .dashboard-card__title span {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .dashboard-card__title i {
+  color: var(--color-primary-400);
+}
+
+[data-theme="dark"] .chart-card__title {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .reports-header__title,
+[data-theme="dark"] .reports-header__title span {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .reports-header__subtitle {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .admin-header__title,
+[data-theme="dark"] .admin-header__title span {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .admin-header__title i {
+  color: var(--color-primary-400);
+}
+
+[data-theme="dark"] .admin-header__subtitle {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .settings-section__title,
+[data-theme="dark"] .settings-section__title span {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .settings-section__title i {
+  color: var(--color-primary-400);
+}
+
+/* Settings Cards - Complete dark mode styling */
+[data-theme="dark"] .settings-section {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border-light);
+}
+
+[data-theme="dark"] .settings-section__header {
+  background: var(--color-bg-secondary);
+  border-bottom-color: var(--color-border-light);
+}
+
+[data-theme="dark"] .settings-section__body {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .settings-form__actions {
+  border-top-color: var(--color-border-light);
+}
+
+[data-theme="dark"] .profile-picture__preview {
+  border-color: var(--color-border-light);
+}
+
+[data-theme="dark"] .profile-picture__preview:hover {
+  border-color: var(--color-primary-500);
+}
+
+[data-theme="dark"] .profile-picture__hint {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .budget-visual__bar {
+  background-color: var(--color-gray-700);
+}
+
+[data-theme="dark"] .budget-visual__spent,
+[data-theme="dark"] .budget-visual__remaining {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .budget-visual {
+  background-color: var(--color-bg-tertiary);
+}
+
+[data-theme="dark"] .profile-picture__change {
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .profile-picture__change:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] .form__hint {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .checkbox-label:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+[data-theme="dark"] .checkbox-text {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .dashboard-header__title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .dashboard-header__subtitle {
+  color: var(--color-text-secondary);
+}
+
 /* Fix white text on white backgrounds in dark mode */
 [data-theme="dark"] .expense-item__btn--edit:hover {
   color: var(--color-text-primary);
