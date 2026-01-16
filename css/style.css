@@ -271,6 +271,15 @@ ol {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing-8);
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .expenses__content {
+    grid-template-columns: 400px 1fr;
+    gap: var(--spacing-8);
+    align-items: start;
+  }
 }
 
 /* ========================================
@@ -280,8 +289,38 @@ ol {
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-6);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--color-gray-200);
+  position: relative;
+  height: fit-content;
+}
+
+@media (min-width: 768px) {
+  .expense-form {
+    position: sticky;
+    top: calc(var(--spacing-8) + 80px); /* Account for header height + top padding */
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+  
+  /* Custom scrollbar for form */
+  .expense-form::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .expense-form::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+    border-radius: var(--border-radius);
+  }
+  
+  .expense-form::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: var(--border-radius);
+  }
+  
+  .expense-form::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-400);
+  }
 }
 
 .expense-form__header {
@@ -389,15 +428,26 @@ ol {
 .expense-list {
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--color-gray-200);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  min-height: 500px;
+}
+
+@media (min-width: 768px) {
+  .expense-list {
+    max-height: calc(100vh - 140px);
+  }
 }
 
 .expense-list__header {
   padding: var(--spacing-6);
   border-bottom: 1px solid var(--color-gray-200);
   background-color: var(--color-gray-50);
+  flex-shrink: 0;
 }
 
 .expense-list__title {
@@ -415,7 +465,30 @@ ol {
 
 .expense-list__content {
   padding: var(--spacing-6);
-  min-height: 400px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  /* Custom scrollbar for expense list */
+  .expense-list__content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .expense-list__content::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+    border-radius: var(--border-radius);
+  }
+  
+  .expense-list__content::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: var(--border-radius);
+  }
+  
+  .expense-list__content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-400);
+  }
 }
 
 .expense-list__items {
@@ -1063,11 +1136,6 @@ ol {
     padding: 0 var(--spacing-6);
   }
   
-  .expenses__content {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-6);
-  }
-  
   .expense-list__filters {
     flex-wrap: nowrap;
   }
@@ -1102,11 +1170,6 @@ ol {
     max-width: 480px;
   }
   
-  .expenses__content {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-8);
-  }
-  
   .reports__charts {
     grid-template-columns: 1fr 1fr;
   }
@@ -1118,7 +1181,7 @@ ol {
   }
   
   .expenses__content {
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 420px 1fr;
     gap: var(--spacing-8);
   }
 }
@@ -1155,8 +1218,20 @@ ol {
     gap: var(--spacing-2);
   }
   
+  .expenses__content {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-6);
+  }
+  
   .expense-form {
     padding: var(--spacing-4);
+    position: relative;
+    max-height: none;
+  }
+  
+  .expense-list {
+    max-height: none;
+    min-height: 400px;
   }
   
   .expense-list__header {
@@ -1165,6 +1240,7 @@ ol {
   
   .expense-list__content {
     padding: var(--spacing-4);
+    max-height: 60vh;
   }
   
   .expense-item {
