@@ -698,6 +698,31 @@ ol {
 }
 
 /* ========================================
+   VIEW TRANSITIONS
+   ======================================== */
+.section-view {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.section-view--active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-view--hiding {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Ensure sections maintain their layout during transitions */
+.expenses,
+.reports {
+  min-height: 400px;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 @media (min-width: 640px) {

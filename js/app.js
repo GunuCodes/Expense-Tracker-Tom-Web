@@ -11,9 +11,56 @@ const App = {
   // Initialize the application
   init() {
     console.log('Expense Tracker App initialized');
+    this.initializeViews();
     this.setupEventListeners();
     this.loadData();
     this.initializeCharts();
+  },
+
+  // Initialize view states
+  initializeViews() {
+    // Get all section views
+    const sections = document.querySelectorAll('.section-view');
+    
+    // Find which section is currently active (if any)
+    const activeSection = document.querySelector('.section-view--active');
+    
+    // Hide all sections except the active one
+    sections.forEach(section => {
+      if (section !== activeSection) {
+        section.style.display = 'none';
+        section.classList.remove('section-view--active');
+      } else {
+        // Ensure active section is visible
+        section.style.display = 'block';
+        this.currentView = section.id || 'expenses';
+      }
+    });
+    
+    // If no active section, show expenses by default
+    if (!activeSection) {
+      const expensesSection = document.querySelector('#expenses');
+      if (expensesSection) {
+        expensesSection.style.display = 'block';
+        expensesSection.classList.add('section-view--active');
+        this.currentView = 'expenses';
+      }
+    }
+    
+    // Update active nav link
+    document.querySelectorAll('.nav__link').forEach(link => {
+      link.classList.remove('nav__link--active');
+    });
+    
+    const expensesLink = document.querySelector('[href="#expenses"]');
+    if (expensesLink && this.currentView === 'expenses') {
+      expensesLink.classList.add('nav__link--active');
+    } else {
+      const reportsLink = document.querySelector('[href="#reports"]');
+      if (reportsLink && this.currentView === 'reports') {
+        reportsLink.classList.add('nav__link--active');
+      }
+    }
   },
 
   // Setup event listeners using event delegation
@@ -64,6 +111,12 @@ const App = {
 
   // Handle navigation between views
   handleNavigation(target) {
+    // Don't navigate if already on the target view
+    const targetView = target.replace('#', '');
+    if (this.currentView === targetView) {
+      return;
+    }
+
     // Remove active class from all nav links
     document.querySelectorAll('.nav__link').forEach(link => {
       link.classList.remove('nav__link--active');
@@ -75,21 +128,57 @@ const App = {
       activeLink.classList.add('nav__link--active');
     }
 
-    // Show/hide sections based on navigation
-    const sections = document.querySelectorAll('section');
-    sections.forEach(section => {
-      section.style.display = 'none';
-    });
-
+    // Get current and target sections
+    const currentSection = document.querySelector(`#${this.currentView}`);
     const targetSection = document.querySelector(target);
-    if (targetSection) {
-      targetSection.style.display = 'block';
-      this.currentView = target.replace('#', '');
+    
+    if (!targetSection) return;
+
+    // Hide current section with fade out
+    if (currentSection && currentSection !== targetSection) {
+      currentSection.classList.remove('section-view--active');
+      currentSection.classList.add('section-view--hiding');
       
-      // Update charts if navigating to reports
+      setTimeout(() => {
+        currentSection.style.display = 'none';
+        currentSection.classList.remove('section-view--hiding');
+        
+        // Show target section with fade in
+        targetSection.style.display = 'block';
+        setTimeout(() => {
+          targetSection.classList.add('section-view--active');
+        }, 10);
+        
+        this.currentView = targetView;
+        
+        // Update charts if navigating to reports
+        if (this.currentView === 'reports') {
+          setTimeout(() => {
+            this.updateCharts();
+          }, 200);
+        }
+      }, 200);
+    } else {
+      // If no current section or same section, just show target
+      targetSection.style.display = 'block';
+      setTimeout(() => {
+        targetSection.classList.add('section-view--active');
+      }, 10);
+      this.currentView = targetView;
+      
       if (this.currentView === 'reports') {
-        this.updateCharts();
+        setTimeout(() => {
+          this.updateCharts();
+        }, 200);
       }
+    }
+
+    // Close mobile menu if open
+    const nav = document.querySelector('.header__nav');
+    const menuToggle = document.querySelector('.header__menu-toggle');
+    if (nav && menuToggle && nav.classList.contains('nav--open')) {
+      nav.classList.remove('nav--open');
+      menuToggle.classList.remove('menu-toggle--active');
     }
   },
 
