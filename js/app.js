@@ -858,37 +858,166 @@ const App = {
 
   // Get demo expenses
   getDemoExpenses() {
+    const baseId = Date.now();
     return [
       {
-        id: Date.now() - 4,
+        id: baseId - 20,
         amount: 12.50,
         description: 'Lunch at Cafe',
         category: 'food',
-        date: '2024-12-15',
+        date: '2025-11-13',
         createdAt: new Date().toISOString()
       },
       {
-        id: Date.now() - 3,
+        id: baseId - 19,
         amount: 45.00,
         description: 'Gas Station',
         category: 'transport',
-        date: '2024-12-14',
+        date: '2025-11-08',
         createdAt: new Date().toISOString()
       },
       {
-        id: Date.now() - 2,
+        id: baseId - 18,
         amount: 24.00,
         description: 'Movie Tickets',
         category: 'entertainment',
-        date: '2024-12-13',
+        date: '2025-11-02',
         createdAt: new Date().toISOString()
       },
       {
-        id: Date.now() - 1,
+        id: baseId - 17,
         amount: 89.50,
         description: 'Electric Bill',
         category: 'utilities',
-        date: '2024-12-12',
+        date: '2025-10-28',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 16,
+        amount: 125.00,
+        description: 'Grocery Shopping',
+        category: 'food',
+        date: '2025-10-22',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 15,
+        amount: 75.00,
+        description: 'Doctor Visit',
+        category: 'healthcare',
+        date: '2025-10-15',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 14,
+        amount: 199.99,
+        description: 'New Shoes',
+        category: 'shopping',
+        date: '2025-10-08',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 13,
+        amount: 35.00,
+        description: 'Uber Ride',
+        category: 'transport',
+        date: '2025-09-30',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 12,
+        amount: 49.99,
+        description: 'Online Course',
+        category: 'education',
+        date: '2025-09-25',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 11,
+        amount: 28.50,
+        description: 'Coffee & Pastries',
+        category: 'food',
+        date: '2025-09-18',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 10,
+        amount: 120.00,
+        description: 'Water Bill',
+        category: 'utilities',
+        date: '2025-09-12',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 9,
+        amount: 65.00,
+        description: 'Concert Tickets',
+        category: 'entertainment',
+        date: '2025-09-05',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 8,
+        amount: 85.00,
+        description: 'Pharmacy',
+        category: 'healthcare',
+        date: '2025-08-28',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 7,
+        amount: 150.00,
+        description: 'Clothing Store',
+        category: 'shopping',
+        date: '2025-08-20',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 6,
+        amount: 22.00,
+        description: 'Bus Pass',
+        category: 'transport',
+        date: '2025-08-14',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 5,
+        amount: 95.00,
+        description: 'Textbook Purchase',
+        category: 'education',
+        date: '2025-08-07',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 4,
+        amount: 18.75,
+        description: 'Dinner Out',
+        category: 'food',
+        date: '2025-07-30',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 3,
+        amount: 110.00,
+        description: 'Internet Bill',
+        category: 'utilities',
+        date: '2025-07-22',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 2,
+        amount: 42.00,
+        description: 'Streaming Service',
+        category: 'entertainment',
+        date: '2025-07-15',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: baseId - 1,
+        amount: 55.00,
+        description: 'Gym Membership',
+        category: 'healthcare',
+        date: '2025-06-10',
         createdAt: new Date().toISOString()
       }
     ];
