@@ -13,16 +13,30 @@ const App = {
   async init() {
     console.log('Expense Tracker App initialized');
     
-    // Apply settings (theme, currency) first
-    this.applySettings();
+    // Clear all localStorage data (migrate to MongoDB)
+    this.clearAllLocalStorage();
     
-    // Wait for Auth to initialize first
-    if (typeof Auth !== 'undefined' && Auth.checkAuthState) {
+    // Wait for Auth to initialize and check route protection FIRST
+    if (typeof Auth !== 'undefined') {
+      // Auth should already be initialized, but verify state
       await Auth.checkAuthState();
       this.currentUser = Auth.getCurrentUser();
+      
+      // Check if we're on a protected page and not authenticated
+      const currentPage = Auth.getCurrentPage ? Auth.getCurrentPage() : this.getCurrentPage();
+      const requiresAuth = Auth.requiresAuthentication ? Auth.requiresAuthentication(currentPage) : false;
+      
+      if (requiresAuth && !Auth.isAuthenticated) {
+        // Don't continue initialization if not authenticated on protected page
+        console.log('Unauthorized access - stopping initialization');
+        return;
+      }
     } else {
       this.checkAuthState();
     }
+    
+    // Apply settings (theme, currency) after auth check
+    this.applySettings();
     
     this.setupEventListeners();
     await this.loadData();
@@ -31,28 +45,53 @@ const App = {
     this.initializePageFeatures();
   },
 
-  // Ensure admin account exists
-  ensureAdminAccount() {
+  // Clear all localStorage data (migrate to MongoDB)
+  clearAllLocalStorage() {
     try {
-      const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
-      const adminExists = users.some(u => u.email === 'admintrust@email.com');
+      // Keep only the authentication tokens if they exist
+      const apiToken = localStorage.getItem('expenseTrackerToken');
+      const sessionToken = localStorage.getItem('expenseTrackerSessionToken');
+      const currentUser = localStorage.getItem('expenseTrackerCurrentUser');
       
-      if (!adminExists) {
-        const adminUser = {
-          id: Date.now(),
-          name: 'Admin Trust',
-          email: 'admintrust@email.com',
-          password: 'admin123',
-          createdAt: new Date().toISOString(),
-          isAdmin: true
-        };
-        users.push(adminUser);
-        this.setToStorage(this.STORAGE_KEYS.USERS, users);
-        console.log('Admin account created');
+      // Get all keys and remove non-auth ones
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        // Keep only auth-related keys
+        if (key && 
+            key !== 'expenseTrackerToken' && 
+            key !== 'expenseTrackerSessionToken' && 
+            key !== 'expenseTrackerCurrentUser') {
+          keysToRemove.push(key);
+        }
       }
+      
+      // Remove all non-auth keys
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      // Sync tokens between API and Auth
+      if (sessionToken && typeof API !== 'undefined') {
+        API.setToken(sessionToken);
+      } else if (apiToken && typeof API !== 'undefined') {
+        API.setToken(apiToken);
+        // Also store in Auth's key for consistency
+        if (!sessionToken) {
+          localStorage.setItem('expenseTrackerSessionToken', apiToken);
+        }
+      }
+      
+      console.log('LocalStorage cleared - all data now in MongoDB. Auth tokens preserved.');
     } catch (error) {
-      console.error('Error ensuring admin account:', error);
+      console.error('Error clearing localStorage:', error);
     }
+  },
+
+  // Ensure admin account exists (now handled by server-side initialization)
+  async ensureAdminAccount() {
+    // Admin account is now created server-side on startup
+    // This function is kept for compatibility but does nothing
+    // The admin account is automatically created in MongoDB by the server
+    console.log('Admin account initialization handled by server');
   },
 
   // Apply settings (theme, currency)
@@ -1545,7 +1584,9 @@ const App = {
   }
 };
 
-// Initialize app when DOM is loaded
+// Initialize app when DOM is loaded - RUN AFTER AUTH
 document.addEventListener('DOMContentLoaded', async () => {
+  // Wait a bit for Auth to initialize first (Auth.init runs first)
+  await new Promise(resolve => setTimeout(resolve, 50));
   await App.init();
 });

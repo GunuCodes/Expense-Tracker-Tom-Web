@@ -34,8 +34,17 @@ mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => {
+.then(async () => {
   console.log('✅ Connected to MongoDB');
+  
+  // Initialize admin account
+  try {
+    const initAdmin = require('./backend/scripts/initAdmin');
+    await initAdmin();
+  } catch (error) {
+    console.error('⚠️  Warning: Could not initialize admin account:', error.message);
+    // Don't exit - server can still run without admin
+  }
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error);

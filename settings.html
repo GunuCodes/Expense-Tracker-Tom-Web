@@ -27,6 +27,11 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Hide body until auth check completes -->
+    <script>
+      // Hide body immediately to prevent flash of content
+      if (document.body) document.body.style.display = 'none';
+    </script>
 </head>
 <body>
     <!-- Header Navigation -->

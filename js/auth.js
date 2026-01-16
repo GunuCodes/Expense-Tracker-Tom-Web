@@ -15,9 +15,9 @@ const Auth = {
   isAuthenticated: false,
 
   // Initialize authentication
-  init() {
-    this.checkAuthState();
-    this.setupRouteProtection();
+  async init() {
+    await this.checkAuthState();
+    await this.setupRouteProtection();
   },
 
   // Check authentication state from storage and API
@@ -29,6 +29,10 @@ const Auth = {
       if (savedUser && sessionToken && typeof API !== 'undefined') {
         // Verify token with API
         try {
+          // Make sure API has the token
+          if (sessionToken && !API.token) {
+            API.setToken(sessionToken);
+          }
           const response = await API.verifyToken();
           if (response && response.user) {
             this.currentUser = response.user;
@@ -38,7 +42,15 @@ const Auth = {
             return true;
           }
         } catch (error) {
-          console.log('Token verification failed, clearing auth');
+          console.log('Token verification failed, clearing auth:', error);
+          // Clear invalid tokens
+          this.currentUser = null;
+          this.isAuthenticated = false;
+          localStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+          localStorage.removeItem(this.STORAGE_KEYS.SESSION_TOKEN);
+          if (typeof API !== 'undefined') {
+            API.setToken(null);
+          }
         }
       }
 
@@ -76,25 +88,33 @@ const Auth = {
   },
 
   // Setup route protection based on current page
-  setupRouteProtection() {
+  async setupRouteProtection() {
     const currentPage = this.getCurrentPage();
     const requiresAuth = this.requiresAuthentication(currentPage);
     const requiresGuest = this.requiresGuest(currentPage);
 
-    // Check if user is authenticated
-    const isAuth = this.checkAuthState();
+    // Check if user is authenticated (await the async call)
+    const isAuth = await this.checkAuthState();
 
-    // Handle route protection
+    // Handle route protection - CRITICAL: Must redirect before any content loads
     if (requiresAuth && !isAuth) {
-      // Protected page but user not logged in - redirect to landing
-      this.redirectToLanding();
-      return;
+      // Protected page but user not logged in - redirect to landing immediately
+      console.log('Unauthorized access attempt to protected page, redirecting...');
+      // Hide page content immediately
+      if (document.body) {
+        document.body.style.display = 'none';
+      }
+      // Redirect immediately (no delay)
+      window.location.href = 'index.html';
+      return false; // Stop execution
     }
 
     // Check admin access
     if (this.requiresAdmin(currentPage) && (!isAuth || !this.isAdmin())) {
       // Admin page but user is not admin - redirect to dashboard
-      App.showError('Access denied. Admin privileges required.');
+      if (typeof App !== 'undefined' && App.showError) {
+        App.showError('Access denied. Admin privileges required.');
+      }
       setTimeout(() => {
         window.location.href = 'dashboard.html';
       }, 2000);
@@ -115,6 +135,20 @@ const Auth = {
 
     // Update navigation visibility based on page type
     this.updateNavigationVisibility(currentPage, isAuth);
+    
+    // Show body if auth check passed (for protected pages)
+    if (requiresAuth && isAuth) {
+      if (document.body) {
+        document.body.style.display = '';
+      }
+    } else if (!requiresAuth) {
+      // For non-protected pages, show body
+      if (document.body) {
+        document.body.style.display = '';
+      }
+    }
+    
+    return true; // Auth check passed
   },
 
   // Get current page name
@@ -322,10 +356,11 @@ const Auth = {
       // Store user and token
       localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
       if (token) {
+        // Store in both places for compatibility
+        localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, token);
         if (typeof API !== 'undefined') {
           API.setToken(token);
         }
-        localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, token);
       }
 
       this.currentUser = user;
@@ -402,8 +437,9 @@ const Auth = {
   }
 };
 
-// Initialize auth when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  Auth.init();
+// Initialize auth when DOM is loaded - RUN FIRST
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize auth and route protection immediately
+  await Auth.init();
 });
 

@@ -68,6 +68,15 @@ npm run dev
 
 The server will start on `http://localhost:3000`
 
+### Restarting the Server
+
+To restart the server:
+
+1. **Stop the server:** Press `Ctrl + C` in the terminal where the server is running
+2. **Start again:** Run `npm start` or `npm run dev`
+
+**Note:** If you're using `npm run dev` (nodemon), the server will automatically restart when you make code changes. You only need to manually restart if you change environment variables (`.env` file) or install new packages.
+
 ## Step 5: Verify Setup
 
 1. Open your browser to `http://localhost:3000`
@@ -100,9 +109,20 @@ Run `npm install` again to ensure all dependencies are installed.
 
 ## Default Admin Account
 
-The system will automatically create an admin account on first run:
-- Email: `admintrust@email.com`
-- Password: `admin123`
+The system **automatically creates** an admin account in MongoDB when the server starts:
+- **Email:** `admintrust@email.com`
+- **Password:** `admin123`
+- **Name:** Admin User
 
-You can sign up with this email to create the admin account, or it will be created automatically when the server starts.
+The admin account is created automatically on server startup. If it already exists, the server will skip creation and just verify the account exists.
+
+### Manual Admin Creation
+
+If you need to manually create the admin account, you can run:
+
+```bash
+node backend/scripts/initAdmin.js
+```
+
+Or simply sign up with the email `admintrust@email.com` - the system will automatically set the `isAdmin` flag to `true` for this email.
 
