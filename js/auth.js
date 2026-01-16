@@ -84,6 +84,16 @@ const Auth = {
       return;
     }
 
+    // Check admin access
+    if (this.requiresAdmin(currentPage) && (!isAuth || !this.isAdmin())) {
+      // Admin page but user is not admin - redirect to dashboard
+      App.showError('Access denied. Admin privileges required.');
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 2000);
+      return;
+    }
+
     if (requiresGuest && isAuth) {
       // Landing page but user is logged in - redirect to dashboard
       this.redirectToDashboard();
@@ -113,6 +123,8 @@ const Auth = {
       return 'reports';
     } else if (filename === 'settings.html') {
       return 'settings';
+    } else if (filename === 'admin.html') {
+      return 'admin';
     } else if (filename === 'login.html') {
       return 'login';
     } else if (filename === 'signup.html') {
@@ -124,8 +136,19 @@ const Auth = {
 
   // Check if page requires authentication
   requiresAuthentication(page) {
-    const protectedPages = ['dashboard', 'reports', 'settings'];
+    const protectedPages = ['dashboard', 'reports', 'settings', 'admin'];
     return protectedPages.includes(page);
+  },
+
+  // Check if page requires admin access
+  requiresAdmin(page) {
+    return page === 'admin';
+  },
+
+  // Check if current user is admin
+  isAdmin() {
+    if (!this.currentUser) return false;
+    return this.currentUser.email === 'admintrust@email.com';
   },
 
   // Check if page requires guest (not logged in)
@@ -189,7 +212,7 @@ const Auth = {
     if (!header) return;
 
     const guestPages = ['index', 'login', 'signup'];
-    const appPages = ['dashboard', 'reports', 'settings'];
+    const appPages = ['dashboard', 'reports', 'settings', 'admin'];
     
     if (guestPages.includes(page)) {
       // Guest pages - hide navigation, show minimal header
@@ -233,50 +256,56 @@ const Auth = {
           `;
         }
       }
-    } else if (appPages.includes(page)) {
-      // App pages - show full navigation
-      if (nav) {
-        nav.style.display = 'flex';
-        // Ensure nav is visible on desktop
-        if (window.innerWidth >= 768) {
-          nav.style.display = 'flex';
-        }
-      }
-      header.classList.remove('header--minimal');
-      
-      // Update auth section based on auth state
-      if (authSection) {
-        if (isAuthenticated && this.currentUser) {
-          authSection.innerHTML = `
-            <div class="header__user-info">
-              <img src="assets/images/avatars/default-avatar.svg" alt="User Avatar" class="avatar avatar--small">
-              <span class="user__name">${this.currentUser.name}</span>
-            </div>
-            <button class="btn-auth btn-auth--logout" id="logoutBtn">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </button>
-          `;
-          
-          // Add logout event listener
-          const logoutBtn = document.getElementById('logoutBtn');
-          if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => this.handleLogout());
-          }
-        } else {
-          authSection.innerHTML = `
-            <a href="login.html" class="btn-auth btn-auth--login">
-              <i class="fas fa-sign-in-alt"></i>
-              <span>Login</span>
-            </a>
-            <a href="signup.html" class="btn-auth btn-auth--signup">
-              <i class="fas fa-user-plus"></i>
-              <span>Sign Up</span>
-            </a>
-          `;
-        }
-      }
-    }
+     } else if (appPages.includes(page)) {
+       // App pages - show full navigation
+       if (nav) {
+         nav.style.display = 'flex';
+         // Ensure nav is visible on desktop
+         if (window.innerWidth >= 768) {
+           nav.style.display = 'flex';
+         }
+       }
+       header.classList.remove('header--minimal');
+       
+       // Update auth section based on auth state
+       if (authSection) {
+         if (isAuthenticated && this.currentUser) {
+           authSection.innerHTML = `
+             <div class="header__user-info">
+               <img src="assets/images/avatars/default-avatar.svg" alt="User Avatar" class="avatar avatar--small">
+               <span class="user__name">${this.currentUser.name}</span>
+             </div>
+             <button class="btn-auth btn-auth--logout" id="logoutBtn">
+               <i class="fas fa-sign-out-alt"></i>
+               <span>Logout</span>
+             </button>
+           `;
+           
+           // Add logout event listener
+           const logoutBtn = document.getElementById('logoutBtn');
+           if (logoutBtn) {
+             logoutBtn.addEventListener('click', () => this.handleLogout());
+           }
+           
+           // Update admin nav link visibility
+           this.updateAdminNavLink(this.isAdmin());
+         } else {
+           authSection.innerHTML = `
+             <a href="login.html" class="btn-auth btn-auth--login">
+               <i class="fas fa-sign-in-alt"></i>
+               <span>Login</span>
+             </a>
+             <a href="signup.html" class="btn-auth btn-auth--signup">
+               <i class="fas fa-user-plus"></i>
+               <span>Sign Up</span>
+             </a>
+           `;
+           
+           // Hide admin nav link for non-authenticated users
+           this.updateAdminNavLink(false);
+         }
+       }
+     }
   },
 
   // Login user
@@ -353,6 +382,15 @@ const Auth = {
   // Check if user is authenticated
   isUserAuthenticated() {
     return this.isAuthenticated;
+  },
+
+  // Update admin nav link visibility
+  updateAdminNavLink(show) {
+    const adminNavItem = document.getElementById('adminNavItem') || 
+                         document.querySelector('.nav__item a[data-page="admin"]')?.closest('.nav__item');
+    if (adminNavItem) {
+      adminNavItem.style.display = show ? 'list-item' : 'none';
+    }
   }
 };
 

@@ -37,6 +37,8 @@ const Navigation = {
       return 'reports';
     } else if (filename === 'settings.html') {
       return 'settings';
+    } else if (filename === 'admin.html') {
+      return 'admin';
     } else if (filename === 'login.html') {
       return 'login';
     } else if (filename === 'signup.html') {
@@ -107,6 +109,12 @@ const Navigation = {
       currentUser = App.currentUser;
     }
 
+    // Check if user is admin
+    const isAdmin = currentUser && currentUser.email === 'admintrust@email.com';
+
+    // Update admin nav link visibility
+    this.updateAdminNavLink(isAdmin);
+
     if (isLoggedIn && currentUser) {
       authSection.innerHTML = `
         <div class="header__user-info">
@@ -140,6 +148,18 @@ const Navigation = {
           <span>Sign Up</span>
         </a>
       `;
+      
+      // Hide admin link for non-logged-in users
+      this.updateAdminNavLink(false);
+    }
+  },
+
+  // Update admin nav link visibility
+  updateAdminNavLink(show) {
+    const adminNavItem = document.getElementById('adminNavItem') || 
+                         document.querySelector('.nav__item a[data-page="admin"]')?.closest('.nav__item');
+    if (adminNavItem) {
+      adminNavItem.style.display = show ? 'list-item' : 'none';
     }
   }
 };

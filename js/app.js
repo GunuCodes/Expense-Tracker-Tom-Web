@@ -13,6 +13,9 @@ const App = {
   init() {
     console.log('Expense Tracker App initialized');
     
+    // Ensure admin account exists
+    this.ensureAdminAccount();
+    
     // Apply settings (theme, currency) first
     this.applySettings();
     
@@ -29,6 +32,30 @@ const App = {
     
     // Initialize page-specific features
     this.initializePageFeatures();
+  },
+
+  // Ensure admin account exists
+  ensureAdminAccount() {
+    try {
+      const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
+      const adminExists = users.some(u => u.email === 'admintrust@email.com');
+      
+      if (!adminExists) {
+        const adminUser = {
+          id: Date.now(),
+          name: 'Admin Trust',
+          email: 'admintrust@email.com',
+          password: 'admin123',
+          createdAt: new Date().toISOString(),
+          isAdmin: true
+        };
+        users.push(adminUser);
+        this.setToStorage(this.STORAGE_KEYS.USERS, users);
+        console.log('Admin account created');
+      }
+    } catch (error) {
+      console.error('Error ensuring admin account:', error);
+    }
   },
 
   // Apply settings (theme, currency)
@@ -77,6 +104,8 @@ const App = {
       return 'reports';
     } else if (filename === 'settings.html') {
       return 'settings';
+    } else if (filename === 'admin.html') {
+      return 'admin';
     } else if (filename === 'login.html') {
       return 'login';
     } else if (filename === 'signup.html') {
@@ -1272,6 +1301,9 @@ const App = {
       return;
     }
 
+    // Ensure admin account exists
+    this.ensureAdminAccount();
+
     if (!terms) {
       this.showAuthMessage('signup', 'Please agree to the Terms of Service and Privacy Policy', 'error');
       return;
@@ -1347,6 +1379,9 @@ const App = {
       this.showAuthMessage('login', 'Please enter your password', 'error');
       return;
     }
+
+    // Ensure admin account exists
+    this.ensureAdminAccount();
 
     // Check credentials
     const users = this.getFromStorage(this.STORAGE_KEYS.USERS) || [];
