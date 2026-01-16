@@ -11,6 +11,8 @@ const Charts = {
     console.log('Charts initialized with data:', expenses);
     this.createCategoryChart(expenses);
     this.createMonthlyChart(expenses);
+    this.updateCategoryComparison(expenses);
+    this.updateSpendingTrends(expenses);
   },
 
   // Create category breakdown pie chart
@@ -232,6 +234,150 @@ const Charts = {
     console.log('Updating charts with new data:', expenses);
     this.createCategoryChart(expenses);
     this.createMonthlyChart(expenses);
+    this.updateCategoryComparison(expenses);
+    this.updateSpendingTrends(expenses);
+  },
+
+  // Update category comparison section
+  updateCategoryComparison(expenses) {
+    const container = document.getElementById('categoryComparison');
+    if (!container) return;
+
+    const categoryData = this.processCategoryData(expenses);
+    const currency = this.getCurrencySymbol();
+
+    if (categoryData.labels.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>No category data available.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const total = categoryData.values.reduce((sum, val) => sum + val, 0);
+    const maxValue = Math.max(...categoryData.values);
+
+    container.innerHTML = categoryData.labels.map((label, index) => {
+      const value = categoryData.values[index];
+      const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+      const barWidth = maxValue > 0 ? (value / maxValue) * 100 : 0;
+      const categoryId = this.getCategoryId(label);
+      const icon = this.getCategoryIcon(categoryId);
+
+      return `
+        <div class="category-comparison-item">
+          <div class="category-comparison-item__header">
+            <div class="category-comparison-item__info">
+              <span class="category-comparison-item__icon">${icon}</span>
+              <span class="category-comparison-item__name">${label}</span>
+            </div>
+            <div class="category-comparison-item__amount">
+              <span class="category-comparison-item__value">${currency}${value.toFixed(2)}</span>
+              <span class="category-comparison-item__percentage">${percentage}%</span>
+            </div>
+          </div>
+          <div class="category-comparison-item__bar">
+            <div class="category-comparison-item__bar-fill" style="width: ${barWidth}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  // Update spending trends section
+  updateSpendingTrends(expenses) {
+    const container = document.getElementById('spendingTrends');
+    if (!container) return;
+
+    const monthlyData = this.processMonthlyData(expenses);
+    const currency = this.getCurrencySymbol();
+    const maxValue = Math.max(...monthlyData.values, 1);
+
+    if (monthlyData.labels.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>No spending trends data available.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = monthlyData.labels.map((label, index) => {
+      const value = monthlyData.values[index];
+      const barHeight = maxValue > 0 ? (value / maxValue) * 100 : 0;
+      const trend = index > 0 ? (value - monthlyData.values[index - 1]) : 0;
+      const trendIcon = trend > 0 ? '📈' : trend < 0 ? '📉' : '➡️';
+      const trendClass = trend > 0 ? 'trend-up' : trend < 0 ? 'trend-down' : 'trend-neutral';
+
+      return `
+        <div class="spending-trend-item">
+          <div class="spending-trend-item__header">
+            <span class="spending-trend-item__month">${label}</span>
+            <div class="spending-trend-item__info">
+              <span class="spending-trend-item__amount">${currency}${value.toFixed(2)}</span>
+              ${index > 0 ? `
+                <span class="spending-trend-item__trend ${trendClass}">
+                  ${trendIcon} ${trend > 0 ? '+' : ''}${currency}${Math.abs(trend).toFixed(2)}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+          <div class="spending-trend-item__bar">
+            <div class="spending-trend-item__bar-fill" style="height: ${barHeight}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  // Get category ID from name
+  getCategoryId(name) {
+    const categoryMap = {
+      'Food & Dining': 'food',
+      'Transportation': 'transport',
+      'Entertainment': 'entertainment',
+      'Utilities': 'utilities',
+      'Shopping': 'shopping',
+      'Healthcare': 'healthcare',
+      'Education': 'education',
+      'Other': 'other'
+    };
+    return categoryMap[name] || 'other';
+  },
+
+  // Get category icon
+  getCategoryIcon(categoryId) {
+    const icons = {
+      food: '🍔',
+      transport: '🚗',
+      entertainment: '🎬',
+      utilities: '⚡',
+      shopping: '🛍️',
+      healthcare: '🏥',
+      education: '📚',
+      other: '📋'
+    };
+    return icons[categoryId] || '📋';
+  },
+
+  // Get currency symbol
+  getCurrencySymbol() {
+    if (typeof App !== 'undefined' && App.getFromStorage) {
+      const settings = App.getFromStorage(App.STORAGE_KEYS.SETTINGS) || {};
+      const currency = settings.currency || 'USD';
+      
+      const symbols = {
+        USD: '$',
+        EUR: '€',
+        GBP: '£',
+        JPY: '¥',
+        CAD: 'C$'
+      };
+      
+      return symbols[currency] || '$';
+    }
+    return '$';
   },
 
   // Destroy all charts
