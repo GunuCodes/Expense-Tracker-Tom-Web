@@ -25,7 +25,8 @@
                 <!-- Logo/App Name -->
                 <div class="header__brand">
                     <a href="index.html" class="header__logo-link">
-                        <h1 class="header__title">ExpenseTracker</h1>
+                        <img src="assets/logos/logo.svg" alt="ExpenseTracker Logo" class="header__logo">
+                        <span class="header__title--sr-only">ExpenseTracker</span>
                     </a>
                 </div>
 
@@ -33,21 +34,36 @@
                 <nav class="header__nav">
                     <ul class="nav__list">
                         <li class="nav__item">
-                            <a href="index.html" class="nav__link" data-page="index">Home</a>
+                            <a href="index.html" class="nav__link" data-page="index">
+                                <i class="fas fa-home nav__icon"></i>
+                                <span>Home</span>
+                            </a>
                         </li>
                         <li class="nav__item">
-                            <a href="dashboard.html" class="nav__link" data-page="dashboard">Dashboard</a>
+                            <a href="dashboard.html" class="nav__link" data-page="dashboard">
+                                <i class="fas fa-chart-line nav__icon"></i>
+                                <span>Dashboard</span>
+                            </a>
                         </li>
                         <li class="nav__item">
-                            <a href="reports.html" class="nav__link" data-page="reports">Reports</a>
+                            <a href="reports.html" class="nav__link" data-page="reports">
+                                <i class="fas fa-chart-pie nav__icon"></i>
+                                <span>Reports</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
 
                 <!-- Auth Buttons -->
                 <div class="header__auth" id="authSection">
-                    <a href="login.html" class="btn-auth btn-auth--login btn-auth--active">Login</a>
-                    <a href="signup.html" class="btn-auth btn-auth--signup">Sign Up</a>
+                    <a href="login.html" class="btn-auth btn-auth--login btn-auth--active">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="signup.html" class="btn-auth btn-auth--signup">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Sign Up</span>
+                    </a>
                 </div>
 
                 <!-- Mobile Menu Toggle -->
@@ -66,6 +82,9 @@
             <div class="auth-page">
                 <div class="auth-card">
                     <div class="auth-card__header">
+                        <div class="auth-card__icon-wrapper">
+                            <i class="fas fa-sign-in-alt auth-card__icon"></i>
+                        </div>
                         <h2 class="auth-card__title">Login</h2>
                         <p class="auth-card__subtitle">Welcome back! Please login to your account.</p>
                     </div>
@@ -102,7 +121,10 @@
                             </label>
                             <a href="#forgot" class="form__link">Forgot password?</a>
                         </div>
-                        <button type="submit" class="btn btn--primary btn--full">Login</button>
+                        <button type="submit" class="btn btn--primary btn--full">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </button>
                     </form>
                     
                     <div class="auth-card__footer">

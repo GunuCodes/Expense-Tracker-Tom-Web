@@ -14,10 +14,18 @@
     
     <title>ExpenseTracker - Personal Expense Tracker</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/logos/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="assets/logos/icon-512.png">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
@@ -30,7 +38,8 @@
                 <!-- Logo/App Name -->
                 <div class="header__brand">
                     <a href="index.html" class="header__logo-link">
-                        <h1 class="header__title">ExpenseTracker</h1>
+                        <img src="assets/logos/logo.svg" alt="ExpenseTracker Logo" class="header__logo">
+                        <span class="header__title--sr-only">ExpenseTracker</span>
                     </a>
                 </div>
 
@@ -38,21 +47,36 @@
                 <nav class="header__nav">
                     <ul class="nav__list">
                         <li class="nav__item">
-                            <a href="index.html" class="nav__link nav__link--active" data-page="index">Home</a>
+                            <a href="index.html" class="nav__link nav__link--active" data-page="index">
+                                <i class="fas fa-home nav__icon"></i>
+                                <span>Home</span>
+                            </a>
                         </li>
                         <li class="nav__item">
-                            <a href="dashboard.html" class="nav__link" data-page="dashboard">Dashboard</a>
+                            <a href="dashboard.html" class="nav__link" data-page="dashboard">
+                                <i class="fas fa-chart-line nav__icon"></i>
+                                <span>Dashboard</span>
+                            </a>
                         </li>
                         <li class="nav__item">
-                            <a href="reports.html" class="nav__link" data-page="reports">Reports</a>
+                            <a href="reports.html" class="nav__link" data-page="reports">
+                                <i class="fas fa-chart-pie nav__icon"></i>
+                                <span>Reports</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
 
                 <!-- Auth Buttons -->
                 <div class="header__auth" id="authSection">
-                    <a href="login.html" class="btn-auth btn-auth--login">Login</a>
-                    <a href="signup.html" class="btn-auth btn-auth--signup">Sign Up</a>
+                    <a href="login.html" class="btn-auth btn-auth--login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="signup.html" class="btn-auth btn-auth--signup">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Sign Up</span>
+                    </a>
                 </div>
 
                 <!-- Mobile Menu Toggle -->
@@ -71,11 +95,22 @@
         <section class="hero">
             <div class="container">
                 <div class="hero__content">
-                    <h1 class="hero__title">Take Control of Your Finances</h1>
-                    <p class="hero__subtitle">Track your expenses, analyze your spending, and achieve your financial goals with our intuitive expense tracker.</p>
-                    <div class="hero__actions">
-                        <a href="signup.html" class="btn btn--primary btn--large">Get Started Free</a>
-                        <a href="dashboard.html" class="btn btn--secondary btn--large">View Dashboard</a>
+                    <div class="hero__text">
+                        <h1 class="hero__title">Take Control of Your Finances</h1>
+                        <p class="hero__subtitle">Track your expenses, analyze your spending, and achieve your financial goals with our intuitive expense tracker.</p>
+                        <div class="hero__actions">
+                            <a href="signup.html" class="btn btn--primary btn--large">
+                                <i class="fas fa-rocket"></i>
+                                <span>Get Started Free</span>
+                            </a>
+                            <a href="dashboard.html" class="btn btn--secondary btn--large">
+                                <i class="fas fa-chart-line"></i>
+                                <span>View Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hero__image">
+                        <img src="assets/images/hero/hero-placeholder.svg" alt="Expense Tracker Dashboard" class="hero__img">
                     </div>
                 </div>
             </div>
@@ -87,22 +122,30 @@
                 <h2 class="features__title">Why Choose ExpenseTracker?</h2>
                 <div class="features__grid">
                     <div class="feature-card">
-                        <div class="feature-card__icon">📊</div>
+                        <div class="feature-card__icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
                         <h3 class="feature-card__title">Easy Tracking</h3>
                         <p class="feature-card__description">Quickly add and categorize your expenses with our simple, intuitive interface.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-card__icon">📈</div>
+                        <div class="feature-card__icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
                         <h3 class="feature-card__title">Visual Reports</h3>
                         <p class="feature-card__description">Get insights into your spending patterns with beautiful charts and analytics.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-card__icon">🔒</div>
+                        <div class="feature-card__icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
                         <h3 class="feature-card__title">Secure & Private</h3>
                         <p class="feature-card__description">Your financial data is stored securely and never shared with third parties.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-card__icon">📱</div>
+                        <div class="feature-card__icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
                         <h3 class="feature-card__title">Responsive Design</h3>
                         <p class="feature-card__description">Access your expense tracker from any device - desktop, tablet, or mobile.</p>
                     </div>
@@ -116,7 +159,10 @@
                 <div class="cta__content">
                     <h2 class="cta__title">Ready to Start Tracking?</h2>
                     <p class="cta__subtitle">Join thousands of users who are taking control of their finances today.</p>
-                    <a href="signup.html" class="btn btn--primary btn--large">Create Free Account</a>
+                    <a href="signup.html" class="btn btn--primary btn--large">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Create Free Account</span>
+                    </a>
                 </div>
             </div>
         </section>
