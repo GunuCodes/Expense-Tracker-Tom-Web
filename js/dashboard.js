@@ -702,7 +702,8 @@ const Dashboard = {
       EUR: '€',
       GBP: '£',
       JPY: '¥',
-      CAD: 'C$'
+      CAD: 'C$',
+      PHP: '₱'
     };
     
     return symbols[currency] || '$';
