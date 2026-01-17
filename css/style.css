@@ -4570,6 +4570,21 @@ img {
   overflow-y: auto;
 }
 
+.modal__content--large .modal__header {
+  padding: 2rem 2.5rem 1.5rem 2.5rem !important;
+  text-align: left;
+}
+
+.modal__content--large .modal__body {
+  padding: 0 2.5rem 1.5rem 2.5rem !important;
+}
+
+.modal__content--large .modal__footer {
+  padding: 1.5rem 2.5rem 2rem 2.5rem !important;
+  border-top: 1px solid var(--color-border);
+  margin-top: 0;
+}
+
 .manage-user-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
@@ -4819,4 +4834,27 @@ img {
 
 [data-theme="dark"] .admin-expense-item:hover {
   background: var(--color-bg-tertiary);
+}
+
+/* Temporary message animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }

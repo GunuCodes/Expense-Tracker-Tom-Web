@@ -157,4 +157,26 @@ router.get('/users/:id/expenses', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+// Delete expense for a specific user (admin only)
+router.delete('/users/:userId/expenses/:expenseId', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { userId, expenseId } = req.params;
+    
+    // Verify the expense belongs to the specified user
+    const expense = await Expense.findOneAndDelete({
+      _id: expenseId,
+      userId: userId
+    });
+
+    if (!expense) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    res.json({ message: 'Expense deleted successfully' });
+  } catch (error) {
+    console.error('Delete expense error:', error);
+    res.status(500).json({ error: 'Failed to delete expense' });
+  }
+});
+
 module.exports = router;

@@ -196,6 +196,12 @@ const API = {
   async getUserExpenses(userId) {
     const response = await this.request(`/admin/users/${userId}/expenses`);
     return response.expenses || [];
+  },
+
+  async deleteUserExpense(userId, expenseId) {
+    return await this.request(`/admin/users/${userId}/expenses/${expenseId}`, {
+      method: 'DELETE'
+    });
   }
 };
 

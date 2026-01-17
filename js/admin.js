@@ -603,25 +603,46 @@ const Admin = {
     }
     
     try {
-      if (typeof API !== 'undefined' && API.deleteExpense) {
-        await API.deleteExpense(expenseId);
+      // Get current user ID from modal
+      const modal = document.getElementById('manageUserModal');
+      const userId = modal?.getAttribute('data-current-user-id');
+      
+      if (!userId) {
+        App.showError('User ID not found');
+        return;
+      }
+      
+      if (typeof API !== 'undefined' && API.deleteUserExpense) {
+        // Use admin endpoint to delete expense
+        await API.deleteUserExpense(userId, expenseId);
         
-        // Get current user ID from modal
-        const modal = document.getElementById('manageUserModal');
-        const userId = modal?.getAttribute('data-current-user-id');
-        
-        if (userId) {
-          // Reload user data
-          await this.handleManageUser(userId);
+        // Show success message
+        if (typeof App !== 'undefined') {
+          if (App.showSuccessMessage) {
+            App.showSuccessMessage('Expense deleted successfully!');
+          } else if (App.showMessage) {
+            App.showMessage('Expense deleted successfully!', 'success');
+          } else {
+            // Fallback: create a temporary success message
+            this.showTemporaryMessage('Expense deleted successfully!', 'success');
+          }
+        } else {
+          alert('Expense deleted successfully!');
         }
         
-        App.showSuccessMessage('Expense deleted successfully!');
+        // Reload user data to refresh the list
+        await this.handleManageUser(userId);
       } else {
         App.showError('API not available');
       }
     } catch (error) {
       console.error('Error deleting expense:', error);
-      App.showError(error.message || 'Failed to delete expense');
+      const errorMessage = error.message || 'Failed to delete expense';
+      if (typeof App !== 'undefined' && App.showError) {
+        App.showError(errorMessage);
+      } else {
+        alert('Error: ' + errorMessage);
+      }
     }
   },
   
@@ -643,6 +664,36 @@ const Admin = {
   // Helper: Format category name
   formatCategory(category) {
     return category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Other';
+  },
+  
+  // Helper: Show temporary success/error message
+  showTemporaryMessage(message, type = 'success') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `admin-temp-message admin-temp-message--${type}`;
+    messageDiv.textContent = message;
+    messageDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      background: ${type === 'success' ? '#10b981' : '#ef4444'};
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10000;
+      animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+      messageDiv.style.animation = 'slideOutRight 0.3s ease-out';
+      setTimeout(() => {
+        if (messageDiv.parentNode) {
+          messageDiv.parentNode.removeChild(messageDiv);
+        }
+      }, 300);
+    }, 3000);
   },
 
   // Handle delete user
