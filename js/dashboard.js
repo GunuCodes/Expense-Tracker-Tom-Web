@@ -73,6 +73,13 @@ const Dashboard = {
     }
     form.setAttribute('data-submitting', 'true');
     
+    // Disable submit button to prevent double clicks
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Saving...</span>';
+    }
+    
     try {
       const modal = document.getElementById('addExpenseModal');
       const isEditMode = modal && modal.getAttribute('data-edit-mode') === 'true';
@@ -89,6 +96,12 @@ const Dashboard = {
       // Validate
       if (App.validateExpense && !App.validateExpense(expense)) {
         form.removeAttribute('data-submitting');
+        // Re-enable submit button
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i><span>Add Expense</span>';
+        }
         return;
       }
 
@@ -132,6 +145,12 @@ const Dashboard = {
       App.showError(error.message || 'Failed to save expense');
     } finally {
       form.removeAttribute('data-submitting');
+      // Re-enable submit button
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i><span>Add Expense</span>';
+      }
     }
   },
 

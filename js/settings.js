@@ -384,7 +384,7 @@ const Settings = {
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      // Handle error object properly
+      // Improved error handling - extract meaningful error message
       let errorMessage = 'Failed to update profile. Please try again.';
       if (error) {
         if (typeof error === 'string') {

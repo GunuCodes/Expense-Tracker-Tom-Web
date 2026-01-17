@@ -82,7 +82,7 @@ router.get('/google/callback', async (req, res) => {
     
     client.setCredentials(tokens);
 
-    // Get user info from Google using the access token for more complete data
+    // Improved Google profile picture retrieval using userinfo API
     let googleUserInfo = {};
     try {
       const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {

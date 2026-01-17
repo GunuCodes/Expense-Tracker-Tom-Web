@@ -1,15 +1,9 @@
-/**
- * Express Server for Expense Tracker
- * MongoDB Backend Integration
- */
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
-// Import routes
 const authRoutes = require('./backend/routes/auth');
 const googleAuthRoutes = require('./backend/routes/google-auth');
 const expenseRoutes = require('./backend/routes/expenses');
@@ -21,28 +15,24 @@ const adminRoutes = require('./backend/routes/admin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Increased limit for profile pictures
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files from the root directory
 app.use(express.static(path.join(__dirname)));
 
-// MongoDB Connection
+// Database connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker';
 
 mongoose.connect(MONGODB_URI)
 .then(async () => {
   console.log('✅ Connected to MongoDB');
   
-  // Initialize admin account
   try {
     const initAdmin = require('./backend/scripts/initAdmin');
     await initAdmin();
   } catch (error) {
     console.error('⚠️  Warning: Could not initialize admin account:', error.message);
-    // Don't exit - server can still run without admin
   }
 })
 .catch((error) => {
@@ -50,7 +40,23 @@ mongoose.connect(MONGODB_URI)
   process.exit(1);
 });
 
-// API Routes
+mongoose.connect(MONGODB_URI)
+.then(async () => {
+  console.log('✅ Connected to MongoDB');
+  
+  try {
+    const initAdmin = require('./backend/scripts/initAdmin');
+    await initAdmin();
+  } catch (error) {
+    console.error('⚠️  Warning: Could not initialize admin account:', error.message);
+  }
+})
+.catch((error) => {
+  console.error('❌ MongoDB connection error:', error);
+  process.exit(1);
+});
+
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
 app.use('/api/expenses', expenseRoutes);
@@ -64,14 +70,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
-// Serve HTML files for all routes (SPA fallback)
+// SPA routing - serve static files and fallback to index.html
 app.get('*', (req, res) => {
-  // Don't serve HTML for API routes
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  // Serve the appropriate HTML file
   const filePath = path.join(__dirname, req.path === '/' ? 'index.html' : req.path);
   res.sendFile(filePath, (err) => {
     if (err) {
@@ -80,7 +84,7 @@ app.get('*', (req, res) => {
   });
 });
 
-// Error handling middleware
+// Global error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
