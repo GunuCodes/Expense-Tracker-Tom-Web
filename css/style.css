@@ -437,6 +437,29 @@ ol {
   transform: scale(1.05);
 }
 
+/* New text-based logo styling - sleek and clean design */
+.header__logo-text {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-primary);
+  letter-spacing: var(--letter-spacing-tighter);
+  background: linear-gradient(135deg, var(--color-primary-700), var(--color-primary-900));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  transition: var(--transition-base);
+}
+
+.header__logo-link:hover .header__logo-text {
+  background: linear-gradient(135deg, var(--color-primary-900), var(--color-accent-700));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: scale(1.02);
+}
+
 .header__title--sr-only {
   position: absolute;
   width: 1px;
@@ -546,6 +569,7 @@ ol {
 .btn-auth--signup:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md), var(--shadow-primary);
+  color: var(--color-white); /* Ensure text stays white on hover */
 }
 
 .btn-auth--logout {
@@ -1334,7 +1358,8 @@ body:has(.hero) .main {
   color-scheme: light !important;
 }
 
-.modal__content {
+.modal,
+.modal * {
   background-color: #ffffff !important;
   color: #1a1a1a !important;
 }
@@ -1346,7 +1371,7 @@ body:has(.hero) .main {
   color: #1a1a1a !important;
 }
 
-.modal__backdrop {
+.modal__overlay {
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -2055,7 +2080,7 @@ body:has(.hero) .main {
    LANDING PAGE STYLES
    ======================================== */
 
-/* Hero Section */
+/* Hero Section - Landing page main banner */
 .hero {
   padding: var(--spacing-20) 0 var(--spacing-16);
   background: var(--gradient-hero);
@@ -2118,7 +2143,7 @@ body:has(.hero) .main {
 .hero__actions {
   display: flex;
   gap: var(--spacing-4);
-  justify-content: center;
+  justify-content: center; /* Center the single button after removing "View Dashboard" */
   flex-wrap: wrap;
   position: relative;
   z-index: 1;
