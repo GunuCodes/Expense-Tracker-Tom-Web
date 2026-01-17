@@ -84,6 +84,9 @@ const GoogleAuth = {
     const error = urlParams.get('error');
     const googleAuth = urlParams.get('googleAuth');
 
+    console.log('Google OAuth callback triggered');
+    console.log('URL params:', { token: token ? 'present' : 'missing', error, googleAuth });
+
     if (error) {
       let errorMessage = 'Google authentication failed.';
       if (error === 'no_code') {
@@ -106,6 +109,8 @@ const GoogleAuth = {
     }
 
     if (token && googleAuth === 'true') {
+      console.log('Processing OAuth token...');
+      
       // Store token
       if (typeof API !== 'undefined' && API.setToken) {
         API.setToken(token);
@@ -117,8 +122,12 @@ const GoogleAuth = {
       // Get user info
       try {
         if (typeof API !== 'undefined' && API.verifyToken) {
+          console.log('Verifying token with API...');
           const response = await API.verifyToken();
+          console.log('Token verification response:', response);
+          
           if (response && response.user) {
+            console.log('User verified, logging in...');
             // Login user
             if (typeof Auth !== 'undefined' && Auth.login) {
               Auth.login(response.user, token);
@@ -129,11 +138,16 @@ const GoogleAuth = {
               }
 
               // Redirect to dashboard
+              console.log('Redirecting to dashboard...');
               setTimeout(() => {
                 window.location.href = 'dashboard.html';
               }, 1000);
             }
+          } else {
+            console.error('Token verification failed - no user in response');
           }
+        } else {
+          console.error('API.verifyToken not available');
         }
       } catch (error) {
         console.error('Error verifying token:', error);

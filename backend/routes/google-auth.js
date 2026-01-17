@@ -166,11 +166,19 @@ router.get('/google/callback', async (req, res) => {
     // Generate JWT token
     const token = generateToken(user._id);
 
+    console.log('OAuth callback successful for user:', user.email);
+    console.log('Generated token, redirecting to:', `${frontendUrl}/login.html?token=${token}&googleAuth=true`);
+
     // Redirect to frontend with token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(`${frontendUrl}/login.html?token=${token}&googleAuth=true`);
   } catch (error) {
     console.error('Google OAuth callback error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(`${frontendUrl}/login.html?error=oauth_failed`);
   }

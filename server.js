@@ -40,22 +40,6 @@ mongoose.connect(MONGODB_URI)
   process.exit(1);
 });
 
-mongoose.connect(MONGODB_URI)
-.then(async () => {
-  console.log('✅ Connected to MongoDB');
-  
-  try {
-    const initAdmin = require('./backend/scripts/initAdmin');
-    await initAdmin();
-  } catch (error) {
-    console.error('⚠️  Warning: Could not initialize admin account:', error.message);
-  }
-})
-.catch((error) => {
-  console.error('❌ MongoDB connection error:', error);
-  process.exit(1);
-});
-
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
