@@ -2334,20 +2334,34 @@ img[src*="avatars"],
 .avatar {
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
   border-radius: var(--radius-full);
   border: 2px solid var(--color-border-light);
   box-shadow: var(--shadow-sm);
   object-fit: cover;
+  display: block;
+  flex-shrink: 0;
 }
 
 .avatar--large {
   width: 80px;
   height: 80px;
+  min-width: 80px;
+  min-height: 80px;
+  max-width: 80px;
+  max-height: 80px;
 }
 
 .avatar--small {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;
+  max-height: 32px;
 }
 
 /* General Image Styling */
@@ -2754,7 +2768,12 @@ img {
 .profile-picture__img {
   width: 100%;
   height: 100%;
+  min-width: 120px;
+  min-height: 120px;
+  max-width: 120px;
+  max-height: 120px;
   object-fit: cover;
+  display: block;
 }
 
 .profile-picture__change {
@@ -3856,9 +3875,14 @@ img {
 .admin-user-item__avatar-img {
   width: 100%;
   height: 100%;
+  min-width: 50px;
+  min-height: 50px;
+  max-width: 50px;
+  max-height: 50px;
   border-radius: var(--radius-full);
   object-fit: cover;
   border: 2px solid var(--color-border-light);
+  display: block;
 }
 
 .admin-user-item__badge {
@@ -3946,9 +3970,14 @@ img {
 .admin-user-preview__avatar {
   width: 60px;
   height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
   border-radius: var(--radius-full);
   object-fit: cover;
   border: 2px solid var(--color-border-light);
+  display: block;
 }
 
 .admin-user-preview__info h4 {
@@ -4600,9 +4629,14 @@ img {
 .manage-user-header__avatar {
   width: 80px;
   height: 80px;
+  min-width: 80px;
+  min-height: 80px;
+  max-width: 80px;
+  max-height: 80px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--color-primary);
+  display: block;
 }
 
 .manage-user-header__info h3 {

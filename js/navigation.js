@@ -120,10 +120,11 @@ const Navigation = {
     this.updateAdminNavLink(isAdmin);
 
     if (isLoggedIn && currentUser) {
+      // Use profile picture if available, otherwise use placeholder
       const profilePicture = currentUser.profilePicture || 'assets/images/avatars/default-avatar.svg';
       authSection.innerHTML = `
         <div class="header__user-info">
-          <img src="${profilePicture}" alt="User Avatar" class="avatar avatar--small">
+          <img src="${profilePicture}" alt="User Avatar" class="avatar avatar--small" onerror="this.src='assets/images/avatars/default-avatar.svg'">
           <span class="user__name">${currentUser.name}</span>
         </div>
         <button class="btn-auth btn-auth--logout" id="logoutBtn">

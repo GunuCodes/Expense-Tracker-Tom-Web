@@ -108,11 +108,12 @@ router.get('/google/callback', async (req, res) => {
       if (!user.googleId) {
         user.googleId = googleId;
         user.authProvider = 'google';
-        if (picture && !user.profilePicture) {
-          user.profilePicture = picture;
-        }
-        await user.save();
       }
+      // Always update profile picture from Google if available
+      if (picture) {
+        user.profilePicture = picture;
+      }
+      await user.save();
     } else {
       // Create new user
       user = new User({
@@ -120,7 +121,7 @@ router.get('/google/callback', async (req, res) => {
         email: email.toLowerCase(),
         googleId: googleId,
         authProvider: 'google',
-        profilePicture: picture || null,
+        profilePicture: picture || null, // Save Google profile picture or null
         isAdmin: email.toLowerCase() === 'admintrust@email.com',
         password: null // No password for OAuth users
       });
@@ -219,11 +220,12 @@ router.post('/google/verify', async (req, res) => {
       if (!user.googleId) {
         user.googleId = googleId;
         user.authProvider = 'google';
-        if (picture && !user.profilePicture) {
-          user.profilePicture = picture;
-        }
-        await user.save();
       }
+      // Always update profile picture from Google if available
+      if (picture) {
+        user.profilePicture = picture;
+      }
+      await user.save();
     }
 
     // Generate JWT token

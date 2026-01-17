@@ -112,6 +112,11 @@ const Settings = {
       if (user.profilePicture) {
         profilePicturePreview.src = user.profilePicture;
         profilePicturePreview.setAttribute('data-profile-picture', user.profilePicture);
+        // Add error handler to fallback to placeholder if image fails to load
+        profilePicturePreview.onerror = function() {
+          this.src = 'assets/images/avatars/default-avatar.svg';
+          this.removeAttribute('data-profile-picture');
+        };
       } else {
         profilePicturePreview.src = 'assets/images/avatars/default-avatar.svg';
         profilePicturePreview.removeAttribute('data-profile-picture');

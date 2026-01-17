@@ -271,7 +271,7 @@ const Admin = {
         <div class="admin-user-item" data-user-id="${userId}">
           <div class="admin-user-item__info">
             <div class="admin-user-item__avatar">
-              <img src="${profilePicture}" alt="User Avatar" class="admin-user-item__avatar-img">
+              <img src="${profilePicture}" alt="User Avatar" class="admin-user-item__avatar-img" onerror="this.src='assets/images/avatars/default-avatar.svg'">
               ${isAdminUser ? '<span class="admin-user-item__badge"><i class="fas fa-shield-alt"></i></span>' : ''}
             </div>
             <div class="admin-user-item__details">
@@ -502,7 +502,7 @@ const Admin = {
     modalBody.innerHTML = `
       <div class="manage-user-header">
         <div class="manage-user-header__profile">
-          <img src="${userProfilePicture}" alt="User Avatar" class="manage-user-header__avatar">
+          <img src="${userProfilePicture}" alt="User Avatar" class="manage-user-header__avatar" onerror="this.src='assets/images/avatars/default-avatar.svg'">
           <div class="manage-user-header__info">
             <h3>${user.name || 'No Name'}</h3>
             <p>${user.email}</p>
@@ -739,7 +739,7 @@ const Admin = {
       modalBody.innerHTML = `
         <div class="admin-user-preview">
           <div class="admin-user-preview__info">
-            <img src="${userProfilePicture}" alt="User Avatar" class="admin-user-preview__avatar">
+            <img src="${userProfilePicture}" alt="User Avatar" class="admin-user-preview__avatar" onerror="this.src='assets/images/avatars/default-avatar.svg'">
             <div>
               <h4>${user.name || 'No Name'}</h4>
               <p>${user.email}</p>

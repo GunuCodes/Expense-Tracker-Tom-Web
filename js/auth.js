@@ -349,10 +349,11 @@ const Auth = {
        // Update auth section based on auth state
        if (authSection) {
          if (isAuthenticated && this.currentUser) {
+           // Use profile picture if available, otherwise use placeholder
            const profilePicture = this.currentUser.profilePicture || 'assets/images/avatars/default-avatar.svg';
            authSection.innerHTML = `
              <div class="header__user-info">
-               <img src="${profilePicture}" alt="User Avatar" class="avatar avatar--small">
+               <img src="${profilePicture}" alt="User Avatar" class="avatar avatar--small" onerror="this.src='assets/images/avatars/default-avatar.svg'">
                <span class="user__name">${this.currentUser.name}</span>
              </div>
              <button class="btn-auth btn-auth--logout" id="logoutBtn">
