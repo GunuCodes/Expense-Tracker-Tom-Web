@@ -181,6 +181,30 @@
         </div>
     </div>
 
+    <!-- Manage User Modal -->
+    <div class="modal" id="manageUserModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content modal__content--large">
+            <div class="modal__header">
+                <h2 class="modal__title">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Manage User Settings</span>
+                </h2>
+                <button type="button" class="modal__close" id="closeManageUserModal" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal__body" id="manageUserModalBody">
+                <!-- User stats and expenses will be inserted here -->
+            </div>
+            
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="closeManageUserModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>

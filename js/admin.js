@@ -295,6 +295,10 @@ const Admin = {
           </div>
           <div class="admin-user-item__actions">
             ${!isAdminUser ? `
+              <button class="btn btn--primary btn--small" data-action="manage" data-user-id="${userId}">
+                <i class="fas fa-cog"></i>
+                <span>Manage Settings</span>
+              </button>
               <button class="btn btn--danger btn--small" data-action="delete" data-user-id="${userId}">
                 <i class="fas fa-trash"></i>
                 <span>Delete</span>
@@ -331,6 +335,40 @@ const Admin = {
         await this.updateUsersList(e.target.value);
       });
     }
+    
+    // Manage user modal close buttons
+    const closeManageModal = document.getElementById('closeManageUserModal');
+    const closeManageModalBtn = document.getElementById('closeManageUserModalBtn');
+    const manageModal = document.getElementById('manageUserModal');
+    
+    if (closeManageModal) {
+      closeManageModal.addEventListener('click', () => {
+        if (manageModal) {
+          manageModal.classList.remove('modal--open');
+          document.body.classList.remove('body--modal-open');
+        }
+      });
+    }
+    
+    if (closeManageModalBtn) {
+      closeManageModalBtn.addEventListener('click', () => {
+        if (manageModal) {
+          manageModal.classList.remove('modal--open');
+          document.body.classList.remove('body--modal-open');
+        }
+      });
+    }
+    
+    // Close modal on backdrop click
+    if (manageModal) {
+      const backdrop = manageModal.querySelector('.modal__backdrop');
+      if (backdrop) {
+        backdrop.addEventListener('click', () => {
+          manageModal.classList.remove('modal--open');
+          document.body.classList.remove('body--modal-open');
+        });
+      }
+    }
   },
 
   // Setup user action listeners
@@ -342,6 +380,269 @@ const Admin = {
         this.handleDeleteUser(userId);
       });
     });
+    
+    const manageButtons = document.querySelectorAll('[data-action="manage"]');
+    manageButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const userId = btn.getAttribute('data-user-id');
+        this.handleManageUser(userId);
+      });
+    });
+  },
+
+  // Handle manage user (view stats and expenses)
+  async handleManageUser(userId) {
+    try {
+      // Get user details and expenses from API
+      let userData = null;
+      if (typeof API !== 'undefined' && API.getUserDetails) {
+        userData = await API.getUserDetails(userId);
+      } else {
+        App.showError('API not available');
+        return;
+      }
+      
+      if (!userData || !userData.user) {
+        App.showError('User not found');
+        return;
+      }
+      
+      const user = userData.user;
+      const expenses = userData.expenseList || [];
+      const expensesByCategory = userData.expensesByCategory || [];
+      const monthlySpending = userData.monthlySpending || [];
+      
+      // Calculate additional stats
+      const totalExpenses = expenses.length;
+      const totalSpending = userData.totalSpending || 0;
+      const avgExpense = totalExpenses > 0 ? totalSpending / totalExpenses : 0;
+      
+      // Get most recent expense date
+      const mostRecentExpense = expenses.length > 0 ? new Date(expenses[0].date) : null;
+      const lastActivity = mostRecentExpense ? mostRecentExpense.toLocaleDateString() : 'Never';
+      
+      // Show modal
+      this.showManageUserModal(user, {
+        totalExpenses,
+        totalSpending,
+        avgExpense,
+        lastActivity,
+        expensesByCategory,
+        monthlySpending,
+        expenses
+      });
+    } catch (error) {
+      console.error('Error loading user details:', error);
+      App.showError('Failed to load user details');
+    }
+  },
+  
+  // Show manage user modal
+  showManageUserModal(user, stats) {
+    const modal = document.getElementById('manageUserModal');
+    const modalBody = document.getElementById('manageUserModalBody');
+    if (!modal || !modalBody) return;
+    
+    const userProfilePicture = user.profilePicture || 'assets/images/avatars/default-avatar.svg';
+    
+    // Build expenses list HTML
+    const expensesListHTML = stats.expenses.length > 0 ? stats.expenses.map(expense => {
+      const expenseId = expense._id || expense.id;
+      const expenseDate = new Date(expense.date).toLocaleDateString();
+      const categoryIcon = this.getCategoryIcon(expense.category);
+      
+      return `
+        <div class="admin-expense-item" data-expense-id="${expenseId}">
+          <div class="admin-expense-item__info">
+            <div class="admin-expense-item__icon">
+              <i class="${categoryIcon}"></i>
+            </div>
+            <div class="admin-expense-item__details">
+              <h4 class="admin-expense-item__description">${expense.description || 'No description'}</h4>
+              <div class="admin-expense-item__meta">
+                <span class="admin-expense-item__category">${this.formatCategory(expense.category)}</span>
+                <span class="admin-expense-item__date">${expenseDate}</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-expense-item__amount">
+            $${(expense.amount || 0).toFixed(2)}
+          </div>
+          <div class="admin-expense-item__actions">
+            <button class="btn btn--danger btn--icon-only btn--small" data-action="delete-expense" data-expense-id="${expenseId}" title="Delete expense">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('') : `
+      <div class="empty-state">
+        <div class="empty-state__icon">📝</div>
+        <h4 class="empty-state__title">No expenses found</h4>
+        <p class="empty-state__message">This user hasn't recorded any expenses yet.</p>
+      </div>
+    `;
+    
+    // Build category breakdown HTML
+    const categoryBreakdownHTML = stats.expensesByCategory.length > 0 ? stats.expensesByCategory.map(cat => {
+      return `
+        <div class="admin-category-stat">
+          <div class="admin-category-stat__info">
+            <i class="${this.getCategoryIcon(cat._id)}"></i>
+            <span>${this.formatCategory(cat._id)}</span>
+          </div>
+          <div class="admin-category-stat__values">
+            <span class="admin-category-stat__count">${cat.count} expenses</span>
+            <span class="admin-category-stat__total">$${cat.total.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+    }).join('') : '<p class="text-muted">No category data available</p>';
+    
+    modalBody.innerHTML = `
+      <div class="manage-user-header">
+        <div class="manage-user-header__profile">
+          <img src="${userProfilePicture}" alt="User Avatar" class="manage-user-header__avatar">
+          <div class="manage-user-header__info">
+            <h3>${user.name || 'No Name'}</h3>
+            <p>${user.email}</p>
+            <p class="manage-user-header__joined">Joined: ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="manage-user-stats">
+        <div class="manage-user-stat-card">
+          <div class="manage-user-stat-card__icon">
+            <i class="fas fa-receipt"></i>
+          </div>
+          <div class="manage-user-stat-card__content">
+            <h4>Total Expenses</h4>
+            <p class="manage-user-stat-card__value">${stats.totalExpenses}</p>
+          </div>
+        </div>
+        
+        <div class="manage-user-stat-card">
+          <div class="manage-user-stat-card__icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="manage-user-stat-card__content">
+            <h4>Total Spending</h4>
+            <p class="manage-user-stat-card__value">$${stats.totalSpending.toFixed(2)}</p>
+          </div>
+        </div>
+        
+        <div class="manage-user-stat-card">
+          <div class="manage-user-stat-card__icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="manage-user-stat-card__content">
+            <h4>Average Expense</h4>
+            <p class="manage-user-stat-card__value">$${stats.avgExpense.toFixed(2)}</p>
+          </div>
+        </div>
+        
+        <div class="manage-user-stat-card">
+          <div class="manage-user-stat-card__icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="manage-user-stat-card__content">
+            <h4>Last Activity</h4>
+            <p class="manage-user-stat-card__value">${stats.lastActivity}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="manage-user-section">
+        <h4 class="manage-user-section__title">
+          <i class="fas fa-tags"></i>
+          Category Breakdown
+        </h4>
+        <div class="manage-user-section__content">
+          ${categoryBreakdownHTML}
+        </div>
+      </div>
+      
+      <div class="manage-user-section">
+        <h4 class="manage-user-section__title">
+          <i class="fas fa-list"></i>
+          Expense List
+        </h4>
+        <div class="manage-user-section__content manage-user-section__content--expenses">
+          ${expensesListHTML}
+        </div>
+      </div>
+    `;
+    
+    // Store current user ID for expense deletion
+    modal.setAttribute('data-current-user-id', user._id || user.id);
+    
+    // Show modal
+    modal.classList.add('modal--open');
+    document.body.classList.add('body--modal-open');
+    
+    // Setup expense delete listeners
+    this.setupExpenseDeleteListeners();
+  },
+  
+  // Setup expense delete listeners
+  setupExpenseDeleteListeners() {
+    const deleteExpenseButtons = document.querySelectorAll('[data-action="delete-expense"]');
+    deleteExpenseButtons.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const expenseId = btn.getAttribute('data-expense-id');
+        await this.handleDeleteExpense(expenseId);
+      });
+    });
+  },
+  
+  // Handle delete expense
+  async handleDeleteExpense(expenseId) {
+    if (!confirm('Are you sure you want to delete this expense? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      if (typeof API !== 'undefined' && API.deleteExpense) {
+        await API.deleteExpense(expenseId);
+        
+        // Get current user ID from modal
+        const modal = document.getElementById('manageUserModal');
+        const userId = modal?.getAttribute('data-current-user-id');
+        
+        if (userId) {
+          // Reload user data
+          await this.handleManageUser(userId);
+        }
+        
+        App.showSuccessMessage('Expense deleted successfully!');
+      } else {
+        App.showError('API not available');
+      }
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      App.showError(error.message || 'Failed to delete expense');
+    }
+  },
+  
+  // Helper: Get category icon
+  getCategoryIcon(category) {
+    const icons = {
+      food: 'fas fa-utensils',
+      transport: 'fas fa-car',
+      entertainment: 'fas fa-film',
+      utilities: 'fas fa-bolt',
+      shopping: 'fas fa-shopping-bag',
+      healthcare: 'fas fa-heartbeat',
+      education: 'fas fa-graduation-cap',
+      other: 'fas fa-ellipsis-h'
+    };
+    return icons[category] || icons.other;
+  },
+  
+  // Helper: Format category name
+  formatCategory(category) {
+    return category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Other';
   },
 
   // Handle delete user

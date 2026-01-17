@@ -5,6 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const { authenticate, isAdmin } = require('../middleware/auth');
@@ -100,14 +101,59 @@ router.get('/users/:id', authenticate, isAdmin, async (req, res) => {
     const expenses = await Expense.find({ userId: userId }).sort({ date: -1 });
     const totalSpending = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     
+    // Get expenses by category
+    const expensesByCategory = await Expense.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          total: { $sum: '$amount' }
+        }
+      }
+    ]);
+    
+    // Get monthly spending
+    const monthlySpending = await Expense.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: { 
+            year: { $year: '$date' },
+            month: { $month: '$date' }
+          },
+          total: { $sum: '$amount' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.year': -1, '_id.month': -1 } },
+      { $limit: 12 }
+    ]);
+    
     res.json({
       user,
       expenses: expenses.length,
-      totalSpending
+      totalSpending,
+      expensesByCategory,
+      monthlySpending,
+      expenseList: expenses
     });
   } catch (error) {
     console.error('Get user details error:', error);
     res.status(500).json({ error: 'Failed to fetch user details' });
+  }
+});
+
+// Get expenses for a specific user (admin only)
+router.get('/users/:id/expenses', authenticate, isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const expenses = await Expense.find({ userId: userId })
+      .sort({ date: -1, createdAt: -1 });
+    res.json({ expenses });
+  } catch (error) {
+    console.error('Get user expenses error:', error);
+    res.status(500).json({ error: 'Failed to fetch user expenses' });
   }
 });
 
