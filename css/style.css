@@ -1752,6 +1752,18 @@ body:has(.hero) .main {
   animation: slideDown 0.3s ease-out;
 }
 
+.message--sticky {
+  position: fixed;
+  top: var(--spacing-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  min-width: 300px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
 .message--success {
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
@@ -1767,11 +1779,11 @@ body:has(.hero) .main {
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(-50%) translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 }
 

@@ -49,7 +49,7 @@ router.put('/', authenticate, async (req, res) => {
     }
 
     if (currency !== undefined) {
-      if (!['USD', 'EUR', 'GBP', 'JPY', 'CAD'].includes(currency)) {
+      if (!['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'PHP'].includes(currency)) {
         return res.status(400).json({ error: 'Invalid currency value' });
       }
       settings.currency = currency;

@@ -21,7 +21,7 @@ const settingsSchema = new mongoose.Schema({
   currency: {
     type: String,
     default: 'USD',
-    enum: ['USD', 'EUR', 'GBP', 'JPY', 'CAD']
+    enum: ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'PHP']
   },
   dateFormat: {
     type: String,

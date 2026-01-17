@@ -753,20 +753,23 @@ const App = {
 
   // Show message (success or error)
   showMessage(message, type) {
+    // Remove any existing messages first
+    const existingMessages = document.querySelectorAll('.message--sticky');
+    existingMessages.forEach(msg => msg.remove());
+    
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message message--${type}`;
+    messageDiv.className = `message message--${type} message--sticky`;
     messageDiv.textContent = message;
     
-    // Add to top of main content
-    const main = document.querySelector('.main');
-    if (main) {
-      main.insertBefore(messageDiv, main.firstChild);
-      
-      // Remove after 3 seconds
-      setTimeout(() => {
+    // Add to body as fixed positioned element
+    document.body.appendChild(messageDiv);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      if (messageDiv.parentNode) {
         messageDiv.remove();
-      }, 3000);
-    }
+      }
+    }, 3000);
   },
 
   // ========================================
