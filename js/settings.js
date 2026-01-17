@@ -227,7 +227,8 @@ const Settings = {
       EUR: '€',
       GBP: '£',
       JPY: '¥',
-      CAD: 'C$'
+      CAD: 'C$',
+      PHP: '₱'
     };
     
     return symbols[currency] || '$';
