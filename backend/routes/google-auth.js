@@ -82,14 +82,33 @@ router.get('/google/callback', async (req, res) => {
     
     client.setCredentials(tokens);
 
-    // Get user info from Google
-    const ticket = await client.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
+    // Get user info from Google using the access token for more complete data
+    let googleUserInfo = {};
+    try {
+      const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: {
+          'Authorization': `Bearer ${tokens.access_token}`
+        }
+      });
+      googleUserInfo = await response.json();
+    } catch (error) {
+      console.error('Error fetching Google user info:', error);
+      // Fallback to ID token payload
+      const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      const payload = ticket.getPayload();
+      googleUserInfo = {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+        verified_email: payload.email_verified
+      };
+    }
 
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name, picture, email_verified } = payload;
+    const { id: googleId, email, name, picture, verified_email } = googleUserInfo;
 
     if (!email) {
       return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=no_email`);

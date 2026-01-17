@@ -386,16 +386,25 @@ const Settings = {
       console.error('Error updating profile:', error);
       // Handle error object properly
       let errorMessage = 'Failed to update profile. Please try again.';
-      if (error && typeof error === 'object') {
-        if (error.message) {
+      if (error) {
+        if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error.message && typeof error.message === 'string') {
           errorMessage = error.message;
         } else if (error.error) {
-          errorMessage = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+          if (typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error.message) {
+            errorMessage = error.error.message;
+          }
         } else {
-          errorMessage = JSON.stringify(error);
+          // Last resort - try to extract meaningful info
+          try {
+            errorMessage = error.toString() || 'Unknown error occurred';
+          } catch (e) {
+            errorMessage = 'An unexpected error occurred';
+          }
         }
-      } else if (typeof error === 'string') {
-        errorMessage = error;
       }
       App.showError(errorMessage);
     }
