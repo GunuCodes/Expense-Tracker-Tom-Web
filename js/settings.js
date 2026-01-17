@@ -196,8 +196,8 @@ const Settings = {
       })
       .reduce((total, expense) => total + expense.amount, 0);
 
-    const percentage = budget > 0 ? Math.min((monthlySpending / budget) * 100, 100) : 0;
-    const remaining = Math.max(budget - monthlySpending, 0);
+    const percentage = budget > 0 ? (monthlySpending / budget) * 100 : 0;
+    const remaining = budget - monthlySpending;
 
     const progressBar = document.getElementById('budgetProgress');
     const spentSpan = document.querySelector('.budget-visual__spent');
@@ -205,7 +205,7 @@ const Settings = {
     const currencySymbol = this.getCurrencySymbol();
 
     if (progressBar) {
-      progressBar.style.width = `${percentage}%`;
+      progressBar.style.width = `${Math.min(percentage, 150)}%`;
       if (percentage >= 100) {
         progressBar.classList.add('budget-visual__progress--over');
       } else {
@@ -214,7 +214,13 @@ const Settings = {
     }
 
     if (spentSpan) spentSpan.textContent = `${currencySymbol}${monthlySpending.toFixed(2)} spent`;
-    if (remainingSpan) remainingSpan.textContent = `${currencySymbol}${remaining.toFixed(2)} remaining`;
+    if (remainingSpan) {
+      const isOverBudget = remaining < 0;
+      remainingSpan.textContent = isOverBudget 
+        ? `${currencySymbol}${Math.abs(remaining).toFixed(2)} over budget`
+        : `${currencySymbol}${remaining.toFixed(2)} remaining`;
+      remainingSpan.classList.toggle('budget-visual__remaining--over', isOverBudget);
+    }
   },
 
   // Get currency symbol

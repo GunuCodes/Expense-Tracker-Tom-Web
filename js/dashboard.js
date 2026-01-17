@@ -469,8 +469,8 @@ const Dashboard = {
       } catch (e) {}
     }
     const monthlyBudget = budgetSettings.monthlyBudget || 3000;
-    const percentage = monthlyBudget > 0 ? Math.min((monthlySpending / monthlyBudget) * 100, 100) : 0;
-    const remaining = Math.max(monthlyBudget - monthlySpending, 0);
+    const percentage = monthlyBudget > 0 ? (monthlySpending / monthlyBudget) * 100 : 0;
+    const remaining = monthlyBudget - monthlySpending;
     const isOverBudget = monthlySpending > monthlyBudget;
 
     const currency = this.getCurrencySymbol();
@@ -487,7 +487,7 @@ const Dashboard = {
         </div>
         <div class="budget-progress-card__bar">
           <div class="budget-progress-card__progress ${isOverBudget ? 'budget-progress-card__progress--over' : ''}" 
-               style="width: ${percentage}%"></div>
+               style="width: ${Math.min(percentage, 150)}%"></div>
         </div>
         <div class="budget-progress-card__footer">
           <span class="budget-progress-card__remaining ${isOverBudget ? 'budget-progress-card__remaining--over' : ''}">

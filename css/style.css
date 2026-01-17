@@ -2981,6 +2981,10 @@ img {
   color: var(--color-success);
 }
 
+.budget-visual__remaining--over {
+  color: var(--color-error);
+}
+
 /* Category Budgets */
 .category-budgets {
   display: flex;

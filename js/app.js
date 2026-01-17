@@ -185,12 +185,6 @@ const App = {
 
   // Setup event listeners using event delegation
   setupEventListeners() {
-    // Form submission (dashboard page)
-    const expenseForm = document.getElementById('expenseForm');
-    if (expenseForm) {
-      expenseForm.addEventListener('submit', this.handleFormSubmit.bind(this));
-    }
-
     // Clear form button
     const clearFormBtn = document.getElementById('clearFormBtn');
     if (clearFormBtn) {
