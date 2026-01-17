@@ -167,11 +167,11 @@ router.get('/google/callback', async (req, res) => {
     const token = generateToken(user._id);
 
     console.log('OAuth callback successful for user:', user.email);
-    console.log('Generated token, redirecting to:', `${frontendUrl}/login.html?token=${token}&googleAuth=true`);
+    console.log('Generated token, redirecting to:', `${frontendUrl}/dashboard.html?token=${token}&googleAuth=true`);
 
-    // Redirect to frontend with token
+    // Redirect directly to dashboard with token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/login.html?token=${token}&googleAuth=true`);
+    res.redirect(`${frontendUrl}/dashboard.html?token=${token}&googleAuth=true`);
   } catch (error) {
     console.error('Google OAuth callback error:', error);
     console.error('Error details:', {

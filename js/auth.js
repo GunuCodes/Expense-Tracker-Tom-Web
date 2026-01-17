@@ -17,7 +17,101 @@ const Auth = {
   // Initialize authentication
   async init() {
     await this.checkAuthState();
+    await this.handleOAuthCallback(); // Check for OAuth tokens in URL
     await this.setupRouteProtection();
+  },
+
+  // Handle OAuth callback (check for tokens in URL parameters)
+  async handleOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const googleAuth = urlParams.get('googleAuth');
+    const error = urlParams.get('error');
+
+    console.log('Checking for OAuth callback params:', { token: !!token, googleAuth, error });
+
+    if (error) {
+      let errorMessage = 'Google authentication failed.';
+      if (error === 'no_code') {
+        errorMessage = 'No authorization code received from Google.';
+      } else if (error === 'no_email') {
+        errorMessage = 'No email address found in Google account.';
+      } else if (error === 'oauth_failed') {
+        errorMessage = 'OAuth authentication failed. Please try again.';
+      }
+
+      if (typeof App !== 'undefined' && App.showError) {
+        App.showError(errorMessage);
+      } else {
+        alert(errorMessage);
+      }
+
+      // Clean URL and redirect to login
+      this.cleanUrlAndRedirect('login.html');
+      return;
+    }
+
+    if (token && googleAuth === 'true') {
+      console.log('Processing OAuth token...');
+
+      // Store token
+      if (typeof API !== 'undefined' && API.setToken) {
+        API.setToken(token);
+      }
+
+      // Store in localStorage
+      localStorage.setItem('sessionToken', token);
+
+      // Get user info
+      try {
+        if (typeof API !== 'undefined' && API.verifyToken) {
+          console.log('Verifying OAuth token with API...');
+          const response = await API.verifyToken();
+          console.log('OAuth token verification response:', response);
+
+          if (response && response.user) {
+            console.log('OAuth user verified, logging in...');
+            // Login user
+            this.login(response.user, token);
+
+            // Show success message
+            if (typeof App !== 'undefined' && App.showSuccessMessage) {
+              App.showSuccessMessage(`Welcome, ${response.user.name || 'User'}!`);
+            }
+
+            // Clean URL (remove token from URL)
+            this.cleanUrlAndRedirect();
+            return;
+          } else {
+            console.error('OAuth token verification failed - no user in response');
+          }
+        } else {
+          console.error('API.verifyToken not available');
+        }
+      } catch (error) {
+        console.error('Error verifying OAuth token:', error);
+      }
+
+      // If we get here, there was an error - redirect to login
+      this.cleanUrlAndRedirect('login.html');
+    }
+  },
+
+  // Clean URL parameters and optionally redirect
+  cleanUrlAndRedirect(redirectTo = null) {
+    // Remove token and oauth params from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('token');
+    url.searchParams.delete('googleAuth');
+    url.searchParams.delete('error');
+
+    if (redirectTo) {
+      // Redirect to specific page
+      window.location.href = redirectTo;
+    } else {
+      // Replace current URL without params
+      window.history.replaceState({}, document.title, url.pathname + url.hash);
+    }
   },
 
   // Check authentication state from storage and API
