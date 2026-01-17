@@ -12,10 +12,9 @@ const Budget = require('../models/Budget');
 const { generateToken } = require('../middleware/auth');
 
 // Get Google OAuth client (lazy initialization)
-function getOAuthClient() {
+function getOAuthClient(redirectUri) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`;
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.');
@@ -38,8 +37,8 @@ router.get('/google', (req, res) => {
       });
     }
 
-    const client = getOAuthClient();
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const client = getOAuthClient(redirectUri);
     
     const authUrl = client.generateAuthUrl({
       access_type: 'offline',
@@ -76,8 +75,8 @@ router.get('/google/callback', async (req, res) => {
       return res.redirect(`${frontendUrl}/login.html?error=oauth_failed`);
     }
 
-    const client = getOAuthClient();
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const client = getOAuthClient(redirectUri);
     
     // Exchange code for tokens
     const { tokens } = await client.getToken({ code, redirect_uri: redirectUri });
@@ -261,14 +260,13 @@ router.post('/google/verify', async (req, res) => {
     // Generate JWT token
     const token = generateToken(user._id);
 
-    res.json({
-      message: 'Google authentication successful',
-      user: user.toJSON(),
-      token
-    });
+    // Redirect to frontend with token
+    const frontendUrl = `${req.protocol}://${req.get('host')}`;
+    res.redirect(`${frontendUrl}/login.html?token=${token}`);
   } catch (error) {
     console.error('Google token verification error:', error);
-    res.status(401).json({ error: 'Invalid Google token' });
+    const frontendUrl = `${req.protocol}://${req.get('host')}`;
+    res.redirect(`${frontendUrl}/login.html?error=oauth_failed`);
   }
 });
 
