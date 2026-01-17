@@ -115,6 +115,9 @@ const GoogleAuth = {
       if (typeof API !== 'undefined' && API.setToken) {
         API.setToken(token);
       }
+      
+      // Store in localStorage
+      localStorage.setItem('expenseTrackerToken', token);
 
       // Get user info
       try {

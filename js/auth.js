@@ -60,7 +60,7 @@ const Auth = {
       }
 
       // Store in localStorage
-      localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, token);
+      localStorage.setItem('expenseTrackerToken', token);
 
       // Get user info
       try {

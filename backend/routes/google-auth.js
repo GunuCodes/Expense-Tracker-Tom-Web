@@ -65,13 +65,15 @@ router.get('/google/callback', async (req, res) => {
     const { code } = req.query;
 
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=no_code`);
+      const frontendUrl = `${req.protocol}://${req.get('host')}`;
+      return res.redirect(`${frontendUrl}/login.html?error=no_code`);
     }
 
     // Validate environment variables
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Google OAuth credentials missing in callback');
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=oauth_failed`);
+      const frontendUrl = `${req.protocol}://${req.get('host')}`;
+      return res.redirect(`${frontendUrl}/login.html?error=oauth_failed`);
     }
 
     const client = getOAuthClient();
@@ -111,7 +113,8 @@ router.get('/google/callback', async (req, res) => {
     const { id: googleId, email, name, picture, verified_email } = googleUserInfo;
 
     if (!email) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=no_email`);
+      const frontendUrl = `${req.protocol}://${req.get('host')}`;
+      return res.redirect(`${frontendUrl}/login.html?error=no_email`);
     }
 
     // Find or create user
@@ -167,10 +170,10 @@ router.get('/google/callback', async (req, res) => {
     const token = generateToken(user._id);
 
     console.log('OAuth callback successful for user:', user.email);
-    console.log('Generated token, redirecting to:', `${frontendUrl}/dashboard.html?token=${token}&googleAuth=true`);
+    console.log('Generated token, redirecting to:', `${req.protocol}://${req.get('host')}/dashboard.html?token=${token}&googleAuth=true`);
 
-    // Redirect directly to dashboard with token
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Redirect directly to dashboard with token using the request's origin
+    const frontendUrl = `${req.protocol}://${req.get('host')}`;
     res.redirect(`${frontendUrl}/dashboard.html?token=${token}&googleAuth=true`);
   } catch (error) {
     console.error('Google OAuth callback error:', error);
@@ -179,7 +182,7 @@ router.get('/google/callback', async (req, res) => {
       stack: error.stack,
       name: error.name
     });
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = `${req.protocol}://${req.get('host')}`;
     res.redirect(`${frontendUrl}/login.html?error=oauth_failed`);
   }
 });
