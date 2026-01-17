@@ -36,10 +36,16 @@ const Auth = {
           const response = await API.verifyToken();
           if (response && response.user) {
             this.currentUser = response.user;
-        this.isAuthenticated = true;
-            // Update stored user data
+            this.isAuthenticated = true;
+            // Update stored user data (ensure isAdmin field is included)
             localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
-          return true;
+            console.log('User verified from API:', {
+              email: response.user.email,
+              isAdmin: response.user.isAdmin,
+              isAdminType: typeof response.user.isAdmin,
+              fullUser: response.user
+            });
+            return true;
           }
         } catch (error) {
           console.log('Token verification failed, clearing auth:', error);
@@ -110,15 +116,24 @@ const Auth = {
     }
 
     // Check admin access
-    if (this.requiresAdmin(currentPage) && (!isAuth || !this.isAdmin())) {
-      // Admin page but user is not admin - redirect to dashboard
-      if (typeof App !== 'undefined' && App.showError) {
-      App.showError('Access denied. Admin privileges required.');
+    if (this.requiresAdmin(currentPage)) {
+      console.log('Admin page detected, checking admin access...');
+      console.log('isAuth:', isAuth);
+      console.log('currentUser:', this.currentUser);
+      console.log('isAdmin():', this.isAdmin());
+      
+      if (!isAuth || !this.isAdmin()) {
+        // Admin page but user is not admin - redirect to dashboard
+        console.log('Admin access denied - redirecting to dashboard');
+        if (typeof App !== 'undefined' && App.showError) {
+          App.showError('Access denied. Admin privileges required.');
+        }
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+        return;
       }
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 2000);
-      return;
+      console.log('Admin access granted');
     }
 
     if (requiresGuest && isAuth) {
@@ -188,8 +203,31 @@ const Auth = {
 
   // Check if current user is admin
   isAdmin() {
-    if (!this.currentUser) return false;
-    return this.currentUser.email === 'admintrust@email.com';
+    if (!this.currentUser) {
+      console.log('isAdmin check: No currentUser');
+      return false;
+    }
+    
+    console.log('isAdmin check - currentUser:', {
+      email: this.currentUser.email,
+      isAdmin: this.currentUser.isAdmin,
+      isAdminType: typeof this.currentUser.isAdmin,
+      isAdminStrict: this.currentUser.isAdmin === true
+    });
+    
+    // Check isAdmin field from MongoDB (primary check)
+    // Handle both boolean true and string "true" cases
+    if (this.currentUser.isAdmin === true || this.currentUser.isAdmin === 'true') {
+      console.log('isAdmin check: User is admin (isAdmin field)');
+      return true;
+    }
+    
+    // Fallback to email check for backwards compatibility
+    const isAdminByEmail = this.currentUser.email === 'admintrust@email.com';
+    if (isAdminByEmail) {
+      console.log('isAdmin check: User is admin (email check)');
+    }
+    return isAdminByEmail;
   },
 
   // Check if page requires guest (not logged in)
@@ -353,7 +391,7 @@ const Auth = {
   // Login user (with API token)
   login(user, token = null) {
     try {
-      // Store user and token
+      // Store user and token (ensure isAdmin field is included)
       localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
       if (token) {
         // Store in both places for compatibility
@@ -365,6 +403,7 @@ const Auth = {
 
       this.currentUser = user;
       this.isAuthenticated = true;
+      console.log('User logged in, isAdmin:', user.isAdmin);
 
       // Update UI
       if (typeof App !== 'undefined') {

@@ -110,7 +110,11 @@ const Navigation = {
     }
 
     // Check if user is admin
-    const isAdmin = currentUser && currentUser.email === 'admintrust@email.com';
+    // Check isAdmin field from MongoDB (primary check)
+    const isAdmin = currentUser && (
+      currentUser.isAdmin === true || 
+      currentUser.email === 'admintrust@email.com' // Fallback for backwards compatibility
+    );
 
     // Update admin nav link visibility
     this.updateAdminNavLink(isAdmin);

@@ -169,6 +169,28 @@ const API = {
       body: JSON.stringify(budget)
     });
     return response.budget;
+  },
+
+  // Admin endpoints
+  async getAllUsers() {
+    const response = await this.request('/admin/users');
+    return response.users || [];
+  },
+
+  async getAdminStats() {
+    const response = await this.request('/admin/stats');
+    return response;
+  },
+
+  async getUserDetails(userId) {
+    const response = await this.request(`/admin/users/${userId}`);
+    return response;
+  },
+
+  async deleteUser(userId) {
+    return await this.request(`/admin/users/${userId}`, {
+      method: 'DELETE'
+    });
   }
 };
 

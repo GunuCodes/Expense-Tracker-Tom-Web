@@ -15,6 +15,7 @@ const expenseRoutes = require('./backend/routes/expenses');
 const userRoutes = require('./backend/routes/users');
 const settingsRoutes = require('./backend/routes/settings');
 const budgetRoutes = require('./backend/routes/budget');
+const adminRoutes = require('./backend/routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -57,6 +58,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
