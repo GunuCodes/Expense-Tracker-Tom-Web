@@ -72,10 +72,6 @@ app.get('/api/health', (req, res) => {
 
 // SPA routing - serve static files and fallback to index.html
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
   const filePath = path.join(__dirname, req.path === '/' ? 'index.html' : req.path);
   res.sendFile(filePath, (err) => {
     if (err) {
