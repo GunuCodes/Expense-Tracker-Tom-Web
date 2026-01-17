@@ -11,6 +11,7 @@ const path = require('path');
 
 // Import routes
 const authRoutes = require('./backend/routes/auth');
+const googleAuthRoutes = require('./backend/routes/google-auth');
 const expenseRoutes = require('./backend/routes/expenses');
 const userRoutes = require('./backend/routes/users');
 const settingsRoutes = require('./backend/routes/settings');
@@ -31,10 +32,7 @@ app.use(express.static(path.join(__dirname)));
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker';
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
 .then(async () => {
   console.log('✅ Connected to MongoDB');
   
@@ -54,6 +52,7 @@ mongoose.connect(MONGODB_URI, {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);

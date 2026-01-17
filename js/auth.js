@@ -36,7 +36,7 @@ const Auth = {
           const response = await API.verifyToken();
           if (response && response.user) {
             this.currentUser = response.user;
-            this.isAuthenticated = true;
+        this.isAuthenticated = true;
             // Update stored user data (ensure isAdmin field is included)
             localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
             console.log('User verified from API:', {
@@ -45,7 +45,7 @@ const Auth = {
               isAdminType: typeof response.user.isAdmin,
               fullUser: response.user
             });
-            return true;
+          return true;
           }
         } catch (error) {
           console.log('Token verification failed, clearing auth:', error);
@@ -123,15 +123,15 @@ const Auth = {
       console.log('isAdmin():', this.isAdmin());
       
       if (!isAuth || !this.isAdmin()) {
-        // Admin page but user is not admin - redirect to dashboard
+      // Admin page but user is not admin - redirect to dashboard
         console.log('Admin access denied - redirecting to dashboard');
         if (typeof App !== 'undefined' && App.showError) {
-          App.showError('Access denied. Admin privileges required.');
+      App.showError('Access denied. Admin privileges required.');
         }
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 2000);
-        return;
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 2000);
+      return;
       }
       console.log('Admin access granted');
     }
