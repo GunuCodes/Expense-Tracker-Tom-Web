@@ -214,19 +214,18 @@ const Admin = {
         users = App.getFromStorage(App.STORAGE_KEYS.USERS) || [];
       }
       
-      // Get expenses from API for each user
-      let allExpenses = [];
-      if (typeof API !== 'undefined' && API.getExpenses) {
+      // Get expenses data from admin stats
+      let expensesByUser = {};
+      if (typeof API !== 'undefined' && API.getAdminStats) {
         try {
-          allExpenses = await API.getExpenses();
+          const stats = await API.getAdminStats();
+          const expensesData = stats.expensesByUser || [];
+          // Convert to object keyed by userId
+          expensesData.forEach(item => {
+            expensesByUser[item._id] = { count: item.count, total: item.total };
+          });
         } catch (error) {
-          console.error('Error loading expenses:', error);
-        }
-      } else if (typeof App !== 'undefined') {
-        if (App.getAllExpenses) {
-          allExpenses = App.getAllExpenses();
-        } else if (App.expenses) {
-          allExpenses = App.expenses;
+          console.error('Error loading admin stats:', error);
         }
       }
       
@@ -257,11 +256,9 @@ const Admin = {
       const isAdminUser = user.isAdmin === true || user.email === this.ADMIN_EMAIL;
       
       // Get expenses for this specific user
-      const userExpenses = allExpenses.filter(e => {
-        const expenseUserId = String(e.userId || e._id || '');
-        return expenseUserId === String(userId);
-      });
-      const userSpending = userExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const userExpenseData = expensesByUser[userId] || { count: 0, total: 0 };
+      const userExpensesCount = userExpenseData.count;
+      const userSpending = userExpenseData.total;
       const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
       
       // Get profile picture or use default
@@ -284,7 +281,7 @@ const Admin = {
                 </span>
                 <span class="admin-user-item__meta-item">
                   <i class="fas fa-receipt"></i>
-                  Expenses: ${userExpenses.length}
+                  Expenses: ${userExpensesCount}
                 </span>
                 <span class="admin-user-item__meta-item">
                   <i class="fas fa-dollar-sign"></i>
