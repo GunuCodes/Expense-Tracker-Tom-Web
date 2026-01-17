@@ -262,7 +262,7 @@ router.post('/google/verify', async (req, res) => {
 
     // Redirect to frontend with token
     const frontendUrl = `${req.protocol}://${req.get('host')}`;
-    res.redirect(`${frontendUrl}/login.html?token=${token}`);
+    res.redirect(`${frontendUrl}/login.html?token=${token}&googleAuth=true`);
   } catch (error) {
     console.error('Google token verification error:', error);
     const frontendUrl = `${req.protocol}://${req.get('host')}`;

@@ -79,8 +79,8 @@ const Auth = {
               App.showSuccessMessage(`Welcome, ${response.user.name || 'User'}!`);
             }
 
-            // Clean URL (remove token from URL)
-            this.cleanUrlAndRedirect();
+            // Clean URL and redirect to dashboard
+            this.cleanUrlAndRedirect('dashboard.html');
             return;
           } else {
             console.error('OAuth token verification failed - no user in response');
