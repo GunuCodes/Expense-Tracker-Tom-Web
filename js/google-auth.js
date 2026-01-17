@@ -115,9 +115,6 @@ const GoogleAuth = {
       if (typeof API !== 'undefined' && API.setToken) {
         API.setToken(token);
       }
-      
-      // Store in localStorage
-      localStorage.setItem('sessionToken', token);
 
       // Get user info
       try {

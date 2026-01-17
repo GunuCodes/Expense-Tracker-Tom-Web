@@ -7,7 +7,7 @@ const Auth = {
   // Storage keys
   STORAGE_KEYS: {
     CURRENT_USER: 'expenseTrackerCurrentUser',
-    SESSION_TOKEN: 'expenseTrackerSessionToken'
+    SESSION_TOKEN: 'expenseTrackerToken'
   },
 
   // Current user state
@@ -60,7 +60,7 @@ const Auth = {
       }
 
       // Store in localStorage
-      localStorage.setItem('sessionToken', token);
+      localStorage.setItem(this.STORAGE_KEYS.SESSION_TOKEN, token);
 
       // Get user info
       try {
